@@ -4,7 +4,7 @@ jQuery.ajaxSetup({'cache': false});
 function proofreader() {
 
   var cgi_path = "../cgi-bin/";
-  var data_path = "../data/";
+  var data_path = "..";
   var projid = $('body').attr('id');//projid id is body tag id for now
 
   function image_container_func() {

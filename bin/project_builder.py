@@ -10,84 +10,119 @@ import glob
 import urllib
 import os
 import linedetect
-import json
+import optparse
+import project_data
+import re
 import hashlib
-import pickle
-import datetime
-
-image_url_template = "http://www.pgdp.net/projects/%s/%s" #(projectid, pngname)
-
-def scan_directory(directory):
-    filenames = glob.glob(os.path.join(directory, "*.txt"))
-    files = [os.path.abspath(X) for X in filenames]
-    files.sort()
-    return files
 
 
-def download_image(projectid, image, imagepath):
-    urllib.urlretrieve(image_url_template % (projectid, image), imagepath)
+
+class BuilderException(Exception):
+    (BAD_DIRECTORY, BAD_PROJECT_FILE) = range(2)
+    def __init__(self, code):
+        self.code = code
 
 
-def make_first_text(raw_file, encoding):
-    data = unicode(open(raw_file).read(), encoding)
-    output_lines = []
-    for line in data.splitlines():
-        output_lines.append(line.rstrip())
-    output_data = "\n".join(output_lines).encode("utf-8")
-    filename = os.path.join(os.path.dirname(raw_file),
-                            hashlib.sha1(output_data).hexdigest())
-    open(filename, "w").write(output_data)
-    os.chmod(filename, 0640)
-    return os.path.basename(filename)
+class ProjectBuilder:
+
+    re_tws = re.compile(r"[^\S\n]+\n", re.UNICODE)
+
+    def __init__(self, options):
+        self.proj_dir = options.directory or os.getcwd()
+        if not os.path.isdir(self.proj_dir): raise BuilderException(BuilderException.BAD_DIRECTORY)
+        self.options = options
+        self.data = project_data.ProjectData(os.path.join(self.proj_dir, "project"))
+        self.data.set_title(options.title or os.path.basename(self.proj_dir))
+        self.data.set_data_dir(options.datadir or
+                              "/" + os.path.relpath(self.proj_dir, os.path.join(self.proj_dir, "../..")))
+
+
+    def _create_text_file(self, filename, encoding):
+        data = unicode(open(filename).read(), encoding)
+        data = self.re_tws.sub(r"\n", data) #strip trailing EOL whitespace
+        data = data.rstrip() #strip EOS whitespace
+        filename = os.path.join(self.proj_dir, hashlib.sha1(data.encode("utf-8")).hexdigest())
+        open(filename, "w").write(data.encode("utf-8"))
+        os.chmod(filename, 0640)
+        return filename
+
+
+    def build(self):
+        filenames = glob.glob(os.path.join(self.proj_dir, "*.txt"))
+        files = [os.path.abspath(X) for X in filenames]
+        files.sort()
+        images = [os.path.basename(X[:-3] + "png") for X in files]
+        context_images = zip([None] + images[:-1], images, images[1:] + [None])
+        encoding = self.options.encoding or "utf-8"
+        for c, f in enumerate(files):
+            self.data.add_page(os.path.basename(f)[:-4],
+                               os.path.basename(self._create_text_file(f, encoding)),
+                               context_images[c])
+        self.data.save()
+
+
+    def lines(self):
+        pages = self.data.get_pages()
+        skiplines = self.options.skiplines or 0
+        for p in pages:
+            image = self.data.get_images(p)[1]
+            print image
+            if self.options.overwrite or self.data.get_lines(p) == None:
+                imagepath = os.path.join(self.proj_dir, image)
+                print imagepath
+                lines = linedetect.process_image(imagepath, 16)
+                print lines
+                self.data.set_lines(p, lines[skiplines:])
+
+
+    def images(self):
+        baseurl = self.options.img_url or "http://www.pgdp.net/projects/%s/" % os.path.basename(self.proj_dir)
+        pages = self.data.get_pages()
+        for p in pages:
+            image = self.data.get_images(p)[1]
+            imagepath = os.path.join(self.proj_dir, image)
+            if os.path.exists(imagepath):
+                print imagepath, "exists"
+            else:
+                print "Downloading", baseurl + "/" + image, "to", imagepath
+                urllib.urlretrieve(baseurl + "/" + image, imagepath)
+                os.chmod(imagepath, 0640)
+
+
+
+def main():
+    usage = "usage: %prog [build|lines|images|dump] [options]"
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option("-e", "--encoding", dest="encoding",
+                      help="The encoding of the source text files")
+    parser.add_option("-d", "--directory", dest="directory",
+                      help="The directory to process, if it is not CWD")
+    parser.add_option("-u", "--url", dest="img_url",
+                      help="Base URL to download images from (uses CWD if omitted")
+    parser.add_option("-t", "--title", dest="title",
+                      help="Project title.")
+    parser.add_option("-r", "--datadir", dest="datadir",
+                      help="The path to the directory containing the data from the web server's perspective")
+    parser.add_option("-s", "--skiplines", dest="skiplines", type="int",
+                      help="Lines to skip when processing lines (for running headers)")
+    parser.add_option("-o", "--overwrite", dest="overwrite", action="store_true",
+                      help="Overwrite exisitng data")
+    (options, args) = parser.parse_args()
+    pb = ProjectBuilder(options)
+    command = args[0] if len(args) else None
+    if command == "build":
+        pb.build()
+    elif command == "lines":
+        pb.lines()
+    elif command == "images":
+        pb.images()
+    elif command == "dump":
+        pb.data.dump()
+    else:
+        parser.print_help()
 
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 4:
-        print "Usage: %s project_id project_dir title [encoding]" % sys.argv[0]
-        sys.exit(-1)
-    project_id = sys.argv[1]
-    project_dir = sys.argv[2]
-    title = sys.argv[3]
-    encoding = "latin1"
-    data_path = os.path.abspath(project_dir)
-    while True:
-        head, tail = os.path.split(data_path)
-        if tail == "data": break
-        if not head:
-            print "No parent directory named 'data' found"
-            sys.exit(-1)
-        data_path = head
-    if len(sys.argv) == 5:
-        encoding = sys.argv[4]
-    if not os.path.isdir(project_dir):
-        print project_dir, "is not a directory"
-        sys.exit(-1)
-    text_files = scan_directory(sys.argv[2])
-    text_list, image_list, lines_list = [], [], []
-    for f in text_files:
-        text_list.append([make_first_text(f, encoding), 0, datetime.datetime.utcnow()])
-        image_path = f[:-3] + "png"
-        image = os.path.basename(image_path)
-        if os.path.exists(image_path):
-            print image_path, "exists"
-        else:
-            print "Downloading", image, "to",  image_path
-            download_image(sys.argv[1], image, image_path)
-            os.chmod(image_path, 0640)
-        image = os.path.relpath(image_path, data_path)
-        image_list.append(image)
-        lines_list.append(linedetect.process_image(image_path, 16))
-    context_image_list = zip([None] + image_list[:-1], image_list, image_list[1:] + [None])
-    alt_list = [{} for X in image_list]
-    page_ids = [os.path.basename(X).replace(".png", "")  for X in image_list]
-    output = zip(context_image_list, lines_list, text_list, alt_list)
-    output = [list(X) for X in output]
-    output = dict(zip(page_ids, output))
-    project_filename = os.path.join(project_dir, "project")
-    project = open(project_filename, "w")
-    pickle.dump(({"id": project_id, "title": title, "phase": "lines"}, output), project)
-    os.chmod(project_filename, 0660)
-
-
+    main()
 

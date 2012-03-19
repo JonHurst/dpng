@@ -61,7 +61,9 @@ class CommandProcessor:
         if not pageid: raise CommandException(CommandException.NOPAGEID)
         print "Content-type: application/json; charset=UTF-8\n"
         json.dump([pageid, self.data.get_title(), self.data.get_text(pageid, os.environ["REMOTE_ADDR"]),
-                   self.data.get_images(pageid), self.data.get_lines(pageid)], sys.stdout)
+                   [os.path.join(self.data.get_data_dir(), X) if X else None
+                    for X in self.data.get_images(pageid) ],
+                   self.data.get_lines(pageid)], sys.stdout)
 
 
     def save(self):
@@ -114,7 +116,7 @@ class FakeForm:
             "projid": "projid_4f419bd5258cd",
             "verb": "get",
             "lines" : [1000, 2000, 3000],
-            "pageid" : "092.png",
+            "pageid" : "091",
             "text": "This is a yet another test"
             }
         if value in values.keys():
