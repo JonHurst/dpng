@@ -1,0 +1,157 @@
+#!/usr/bin/python
+# coding=utf-8
+
+import cgi
+import cgitb
+import subprocess
+import sys
+import re
+
+TYPE_UNKNOWN, TYPE_WORD, TYPE_SPACE, TYPE_PUNC, TYPE_NOTE = range(5)
+# descriptors = ["Unknown", "Word", "Whitespace", "Punctuation", "Note"]
+
+stealth_scannos = set(["he", "be"])
+
+def aspell_text(text):
+    aspell_output = subprocess.Popen(["/usr/bin/aspell", "list", "--encoding=utf-8"],
+                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE
+                                     ).communicate(text.encode("utf-8"))[0]
+    return set(unicode(aspell_output, "utf-8").splitlines())
+
+
+def tokenise(text):
+    tokens = []
+    regexp_notes = re.compile(r"(\[\*\*[^\]]*\])", re.UNICODE)
+    regexp_words = re.compile(r"([\w]+)", re.UNICODE)
+    regexp_whitespace = re.compile(r"([\s]+)", re.UNICODE)
+
+    def process_words(text):
+        text_sections = regexp_words.split(text)
+        for c, s in enumerate(text_sections):
+            if c % 2:
+                tokens.append([s, TYPE_WORD])
+            else:
+                process_whitespace(s)
+
+    def process_whitespace(text):
+        text_sections = regexp_whitespace.split(text)
+        for c, s in enumerate(text_sections):
+            if c % 2:
+                tokens.append([s, TYPE_SPACE])
+            else:
+                tokens.append([s, TYPE_PUNC])
+
+    text_sections = regexp_notes.split(text)
+    for c, s in enumerate(text_sections):
+        if c % 2:
+            tokens.append([s, TYPE_NOTE])
+        else:
+            process_words(s)
+    return [X for X in tokens if len(X[0])]
+
+
+def apply_language_specials(tokens):
+    #join word + punctuation=="'" + word into single word
+    for c in range(len(tokens) - 2):
+        if (tokens[c][1] == TYPE_WORD and
+            tokens[c + 1][0] == "'" and
+            tokens[c + 2][1] == TYPE_WORD):
+            tokens[c] = [tokens[c][0] + tokens[c + 1][0] + tokens[c + 2][0], TYPE_WORD]
+            tokens[c + 1] = tokens[c + 2] = ["", TYPE_UNKNOWN]
+    return [X for X in tokens if X[1] != TYPE_UNKNOWN]
+
+
+def calculate_classes(tokens, spelling_errors, stealth_scannos):
+    tokens.insert(0, ["", TYPE_SPACE])
+    tokens.append(["\n", TYPE_SPACE])
+    for c, t in enumerate(tokens):
+        if t[1] == TYPE_PUNC:
+            tokens[c].append("punc")
+            #hyphen at end of line
+            if ((t[0].endswith("-") and tokens[c+1][0] == "\n") or
+                #punctuation with space both sides that is not a 3 dot  ellipsis
+                (tokens[c][0] != "..." and tokens[c-1][1] == TYPE_SPACE and tokens[c+1][1] == TYPE_SPACE) or
+                #end of word punctuation without a following space
+                (tokens[c][0][-1] in ":;!?" and tokens[c + 1][1] != TYPE_SPACE) or
+                # . and , that are not followed by a space and are not single and followed by a number
+                (tokens[c][0][-1] in ".," and tokens[c + 1][1] != TYPE_SPACE and not
+                 (len(tokens[c][0]) == 1 and tokens[c + 1][0].isdigit()))):
+                tokens[c].append("error")
+        elif t[1] == TYPE_WORD:
+            if t[0] in spelling_errors:
+                tokens[c].append("spell")
+            elif t[0] in stealth_scannos:
+                tokens[c].append("stealth")
+        elif t[1] == TYPE_NOTE:
+            tokens[c].append("note")
+    del tokens[-1]
+
+
+def build_text(tokens):
+    token_join = ""
+    for t in tokens:
+        if len(t) > 2: #classes appended
+            token_join += "<span class='%s'>%s</span>" % (" ".join(t[2:]), cgi.escape(t[0]))
+        else:
+            token_join += cgi.escape(t[0])
+    output = ""
+    for line in token_join.splitlines():
+        if len(line):
+            output += "<div class='line'>" + line + "</div>\n"
+        else:
+            output += "<div class='blank'></div>\n"
+    return "<div id='text'>\n" + output + "</div>"
+
+
+if len(sys.argv) == 2 and sys.argv[1] == "test":
+    text=u"""\
+this is an error . here
+this is not a $5,000.00 error
+[**Note2]
+
+INTRODUCTION [**Note]
+
+caféq The following narrative falls naturally into three
+divisions, corresponding to distinct and clearly
+marked periods of Sophy's life. Of the first and
+second-her childhood at Morpingham and her so-
+journ in Paris--the records are fragmentary, and
+tradition does little to supplement them. As regards
+Morpingham, the loss is small. The annals of a little'
+maid-servant may be left in vagueness without much
+loss. Enough remains to show both the manner of
+child Sophy was and how it fell out that she spread
+her wings and left the Essex village far behind her.
+It is a different affair when we come to the French
+<em>period</em>. The years spent in and near Paris, in the
+care and under the roof of Lady Margaret Dudding-
+ton, were of crucial moment in Sophy's development.
+They changed her from what she had been and made
+her what she was to be. Without Paris, Kravo-
+nia, still extraordinary, would have been impossible.
+
+Yet the surviving history of Paris and the life
+there is scanty. Only a sketch is possible. A rec-
+ord existed-and a fairly full one-in the Julia Rob-
+ins correspondence; that we know from Miss Rob-
+ins herself. But the letters written from Paris
+by Sophy to her lifelong friend have, with some
+few exceptions, perished. Miss Robins accounts for
+this-and in view of her careful preservation of
+later correspondence, her apology must be accept-"""
+else:
+    # cgitb.enable()
+    form = cgi.FieldStorage()
+    if not form.has_key('text'):
+        text = u""
+    else:
+        text = unicode(form['text'].value, "utf-8")
+print "Content-type: text/html; charset=UTF-8\n"
+spelling_errors = aspell_text(text)
+tokens = apply_language_specials(tokenise(text))
+calculate_classes(tokens, spelling_errors, stealth_scannos)
+sys.stdout.write(build_text(tokens).encode("utf-8"))
+
+
+
+

@@ -1,0 +1,37 @@
+*
+{
+    margin: 0;
+    padding: 0;
+}
+
+#pagepicker
+{
+    position:absolute;
+    top: 0;
+    left: 0;
+}
+
+#image_container
+{
+    position: relative;
+    margin-left: 15em;
+    width: 600px;
+}
+
+#image
+{
+    cursor: crosshair;
+    width: 600px;
+}
+
+.linehere
+{
+    position: absolute;
+    height: 6px;
+    width: 100%;
+    border: red 1px solid;
+    background-color: red;
+    opacity: 0.2;
+    cursor: pointer;
+    overflow: hidden;
+}
