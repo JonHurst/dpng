@@ -27,7 +27,7 @@ def main():
         cgitb.enable()
         form = cgi.FieldStorage()
     print "Content-type: text/html; charset=UTF-8\n"
-    template = unicode(file("../templates/proofreading_control.html").read(), "utf-8")
+    template = unicode(file("../templates/line_editor.html").read(), "utf-8")
     print template.replace("projid", form.getfirst("projid")).encode("utf-8")
 
 

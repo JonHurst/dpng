@@ -16,7 +16,7 @@ function proofreader() {
 
 
     function load_image(url, pos) {
-      url = url ? data_path + url : "images/blank.png";
+      url = url ? data_path + url : "../images/blank.png";
       var img = $("<img />").attr({'src': url, 'alt': pos});
       if (img.get(0).complete || img.get(0).readyState === 4) {
         image_load_handler({currentTarget: img.get(0)});
