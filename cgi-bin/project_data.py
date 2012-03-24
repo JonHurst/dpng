@@ -29,7 +29,7 @@ class ProjectData:
     def save(self):
         pickle.dump((self.meta, self.project_data),
                     open(self.project_file, "w"))
-        os.chmod(self.project_file, 0660)
+        # os.chmod(self.project_file, 0660)
 
 
     def get_title(self):
