@@ -16,9 +16,12 @@ data_path = "../data/"
 class CommandProcessor:
 
 
-    def __init__(self, form, project_data):
+    def __init__(self, form):
+        projid = form.getfirst("projid")
+        if not projid: raise CommandException(CommandException.NOPROJID)
         self.form = form
-        self.data = project_data
+        self.project_dir = os.path.join(data_path, projid)
+        self.data = project_data.ProjectData(os.path.join(self.project_dir, "project"))
         self.func_map = {
             "get": self.get,
             "list": self.list_pages,
@@ -61,7 +64,7 @@ class CommandProcessor:
         if not pageid: raise CommandException(CommandException.NOPAGEID)
         print "Content-type: application/json; charset=UTF-8\n"
         json.dump([pageid, self.data.get_title(), self.data.get_text(pageid, os.environ["REMOTE_ADDR"]),
-                   [os.path.join(self.data.get_data_dir(), X) if X else None
+                   [os.path.join(self.project_dir, X) if X else None
                     for X in self.data.get_images(pageid) ],
                    self.data.get_lines(pageid)], sys.stdout)
 
@@ -133,10 +136,7 @@ def main():
     else:
         cgitb.enable()
         form = cgi.FieldStorage()
-    projid = form.getfirst("projid")
-    if not projid: raise CommandException(CommandException.NOPROJID)
-    pd = project_data.ProjectData(os.path.join(data_path, projid, "project"))
-    CommandProcessor(form, pd).dispatch()
+    CommandProcessor(form).dispatch()
 
 
 

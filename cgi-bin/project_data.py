@@ -40,14 +40,6 @@ class ProjectData:
         self.meta["title"] = title
 
 
-    def get_data_dir(self):
-        return self.meta["datadir"]
-
-
-    def set_data_dir(self, path):
-        self.meta["datadir"] = path
-
-
     def add_page(self, pageid, text, images):
         self.project_data[pageid] = [images, None, [text, 0, datetime.datetime.utcnow()], {}]
 
@@ -118,14 +110,6 @@ class ProjectData:
         if old_data and old_data[self.FILENAME] not in all_files:
             os.unlink(os.path.join(self.project_dir, old_data[self.FILENAME]))
         self.save()
-
-
-    def get_phase(self):
-        return self.meta.get("phase")
-
-
-    def set_phase(self, phase):
-        self.meta["phase"] = phase
 
 
     def dump(self):
