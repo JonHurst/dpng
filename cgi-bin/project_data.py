@@ -32,12 +32,13 @@ class ProjectData:
         # os.chmod(self.project_file, 0660)
 
 
-    def get_title(self):
-        return self.meta["title"]
+
+    def get_meta(self, field):
+        return self.meta[field]
 
 
-    def set_title(self, title):
-        self.meta["title"] = title
+    def set_meta(self, field, data):
+        self.meta[field] = data
 
 
     def add_page(self, pageid, text, images):

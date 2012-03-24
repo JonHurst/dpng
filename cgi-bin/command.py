@@ -63,7 +63,7 @@ class CommandProcessor:
         pageid = self.form.getfirst("pageid")
         if not pageid: raise CommandException(CommandException.NOPAGEID)
         print "Content-type: application/json; charset=UTF-8\n"
-        json.dump([pageid, self.data.get_title(), self.data.get_text(pageid, os.environ["REMOTE_ADDR"]),
+        json.dump([pageid, self.data.get_meta("title"), self.data.get_text(pageid, os.environ["REMOTE_ADDR"]),
                    [os.path.join(self.project_dir, X) if X else None
                     for X in self.data.get_images(pageid) ],
                    self.data.get_lines(pageid)], sys.stdout)
