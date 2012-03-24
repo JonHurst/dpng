@@ -32,7 +32,6 @@ class ProjectBuilder:
         if not os.path.isdir(self.proj_dir): raise BuilderException(BuilderException.BAD_DIRECTORY)
         self.options = options
         self.data = project_data.ProjectData(os.path.join(self.proj_dir, "project"))
-        self.data.set_title(options.title or os.path.basename(self.proj_dir))
         self.data.set_data_dir(options.datadir or
                               "/" + os.path.relpath(self.proj_dir, os.path.join(self.proj_dir, "../..")))
 
@@ -52,6 +51,7 @@ class ProjectBuilder:
         files = [os.path.abspath(X) for X in filenames]
         files.sort()
         images = [os.path.basename(X[:-3] + "png") for X in files]
+        self.data.set_title(options.title or os.path.basename(self.proj_dir))
         context_images = zip([None] + images[:-1], images, images[1:] + [None])
         encoding = self.options.encoding or "utf-8"
         for c, f in enumerate(files):
