@@ -192,7 +192,7 @@ function proofreader() {
       num_lines = $('#text div.line').length;
       $('span.note').replaceWith(
         function() {
-          return $("<img src='images/postit.png' alt=''/>").attr("title", $(this).text());
+          return $("<img src='../images/postit.png' alt=''/>").attr("title", $(this).text());
         });
       select();
     }
