@@ -44,13 +44,13 @@ class CommandProcessor:
         pages = self.data.get_pages()
         available, done = [], []
         for p in pages:
-            status, timestamp = self.data.get_text_meta(p, os.environ["REMOTE_ADDR"])
-            table = done if self.data.exists(p, os.environ["REMOTE_ADDR"]) else available
+            pageid, status, timestamp = p
+            table = done if self.data.exists(pageid, os.environ["REMOTE_ADDR"]) else available
             table.append(
                 ("<tr>"
                  "<td><a href='%(pageid)s'>%(pageid)s</a></td>"
                  "<td>%(timestamp)s</td>"
-                 "</tr>" % {"pageid": p, "timestamp": timestamp.strftime("%Y-%m-%d %H:%M")}))
+                 "</tr>" % {"pageid": pageid, "timestamp": timestamp.strftime("%Y-%m-%d %H:%M")}))
         template = "<h1>%s</h1><table>%s</table>"
         available = template % ("Available", "".join(available)) if available else ""
         done = template % ("Done", "".join(done)) if done else ""

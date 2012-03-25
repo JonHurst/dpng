@@ -53,7 +53,7 @@ class ProjectBuilder:
 
 
     def lines(self):
-        pages = self.data.get_pages()
+        pages = [X[0] for X in self.data.get_pages()]
         skiplines = self.options.skiplines or 0
         for p in pages:
             image = self.data.get_images(p)[project_data.DATA][1]
@@ -66,7 +66,7 @@ class ProjectBuilder:
 
     def images(self):
         baseurl = self.options.img_url or "http://www.pgdp.net/projects/%s/" % os.path.basename(self.proj_dir)
-        pages = self.data.get_pages()
+        pages = [X[0] for X in self.data.get_pages()]
         for p in pages:
             image = self.data.get_images(p)[project_data.DATA][1]
             imagepath = os.path.join(self.proj_dir, image)

@@ -78,9 +78,15 @@ class ProjectData:
         self.project_data[pageid][field] = [data, status, datetime.datetime.utcnow()]
 
 
-    def get_pages(self):
-        """Returns an alphabetically sortded list of pageids"""
-        return sorted(self.project_data.keys())
+    def get_pages(self, field="ocr"):
+        """Returns an alphabetically sorted list of tuples of the following form:
+           (pageid, status, timestamp)
+        """
+        return [(X,
+                 self.project_data[X][field][STATUS],
+                 self.project_data[X][field][TIMESTAMP])
+                for X in sorted(self.project_data.keys())
+                if self.project_data[X].has_key(field)]
 
 
     def get_images(self, pageid):
@@ -112,18 +118,6 @@ class ProjectData:
             text_data = self.get_data(pageid, "ocr")
         text_data[DATA] = open(os.path.join(self.project_dir, text_data[DATA])).read()
         return text_data
-
-
-    def get_text_meta(self, pageid, user=None):
-        """Returns a tuple of the form
-             (STATUS, TIMESTAMP)
-           for the user's text or, if there is none, for the OCR text."""
-        if user and self.exists(pageid, user):
-           text_data = self.get_data(pageid, user)
-        else:
-            text_data = self.get_data(pageid, "ocr")
-        return (text_data[STATUS], text_data[TIMESTAMP])
-
 
 
     def set_lines(self, pageid, lines):
