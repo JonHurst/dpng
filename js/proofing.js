@@ -168,6 +168,8 @@ function proofreader() {
 
     function change_text(text) {
       $('#text_container').css('display', 'block');//we may have hidden when showing editor
+      text = text.replace(/[^\S\n]+\n/, "\n");//strip EOL whitespace
+      text = text.replace(/\s+$/, ""); //strip EOS whitespace
       if(text_history.length && text == text_history[text_history.length - 1]) {
         select();//safari loses position
         return; //if there is no change, there is nothing to do
