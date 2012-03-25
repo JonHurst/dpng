@@ -42,11 +42,8 @@ class CommandProcessor:
         pages = self.data.get_pages()
         available, done = [], []
         for p in pages:
-            status = self.data.get_status(p, os.environ["REMOTE_ADDR"])
-            timestamp = self.data.get_timestamp(p, os.environ["REMOTE_ADDR"])
-            if not timestamp:
-                timestamp = self.data.get_timestamp(p)
-            table = done if status else available
+            status, timestamp = self.data.get_text_meta(p, os.environ["REMOTE_ADDR"])
+            table = done if self.data.exists(p, os.environ["REMOTE_ADDR"]) else available
             table.append(
                 ("<tr>"
                  "<td><a href='%(pageid)s'>%(pageid)s</a></td>"
@@ -63,10 +60,11 @@ class CommandProcessor:
         pageid = self.form.getfirst("pageid")
         if not pageid: raise CommandException(CommandException.NOPAGEID)
         print "Content-type: application/json; charset=UTF-8\n"
-        json.dump([pageid, self.data.get_meta("title"), self.data.get_text(pageid, os.environ["REMOTE_ADDR"]),
+        text_data = self.data.get_text(pageid, os.environ["REMOTE_ADDR"])
+        json.dump([pageid, self.data.get_meta("title"), text_data[project_data.DATA],
                    [os.path.join(self.project_dir, X) if X else None
-                    for X in self.data.get_images(pageid) ],
-                   self.data.get_lines(pageid)], sys.stdout)
+                    for X in self.data.get_images(pageid)[project_data.DATA]],
+                   self.data.get_lines(pageid)[project_data.DATA]], sys.stdout)
 
 
     def save(self):
@@ -75,7 +73,8 @@ class CommandProcessor:
         text = self.form.getfirst("text")
         if not text: text = ""
         if len(text) > 10240: raise CommandException(CommandException.TOOLARGETEXT)
-        self.data.post_text(pageid, os.environ["REMOTE_ADDR"], text, 1)
+        self.data.set_text(pageid, text, os.environ["REMOTE_ADDR"])
+        self.data.save()
         print "Content-type: application/json; charset=UTF-8\n"
         json.dump("OK", sys.stdout)
 
@@ -87,6 +86,7 @@ class CommandProcessor:
         if not lines:  raise CommandException(CommandException.NOLINES)
         lines = json.loads(lines)
         self.data.set_lines(pageid, lines)
+        self.data.save()
         print "Content-type: application/json; charset=UTF-8\n"
         json.dump("OK", sys.stdout)
 

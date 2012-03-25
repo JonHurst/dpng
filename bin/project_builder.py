@@ -13,8 +13,6 @@ import linedetect
 import optparse
 import project_data
 import re
-import hashlib
-
 
 
 class BuilderException(Exception):
@@ -31,17 +29,8 @@ class ProjectBuilder:
         self.proj_dir = options.directory or os.getcwd()
         if not os.path.isdir(self.proj_dir): raise BuilderException(BuilderException.BAD_DIRECTORY)
         self.options = options
-        self.data = project_data.ProjectData(os.path.join(self.proj_dir, "project"))
-
-
-    def _create_text_file(self, filename, encoding):
-        data = unicode(open(filename).read(), encoding)
-        data = self.re_tws.sub(r"\n", data) #strip trailing EOL whitespace
-        data = data.rstrip() #strip EOS whitespace
-        filename = os.path.join(self.proj_dir, hashlib.sha1(data.encode("utf-8")).hexdigest())
-        open(filename, "w").write(data.encode("utf-8"))
-        os.chmod(filename, 0640)
-        return filename
+        self.project_file = os.path.join(self.proj_dir, "project")
+        self.data = project_data.ProjectData(self.project_file)
 
 
     def build(self):
@@ -53,31 +42,33 @@ class ProjectBuilder:
         context_images = zip([None] + images[:-1], images, images[1:] + [None])
         encoding = self.options.encoding or "utf-8"
         for c, f in enumerate(files):
+            data = unicode(open(f).read(), encoding)
+            data = self.re_tws.sub(r"\n", data).rstrip() #strip trailing EOL and EOS whitespace
             self.data.add_page(os.path.basename(f)[:-4],
-                               os.path.basename(self._create_text_file(f, encoding)),
+                               data.encode("utf-8"),
                                context_images[c])
         self.data.save()
+        os.chmod(self.project_file, 0660)
+
 
 
     def lines(self):
         pages = self.data.get_pages()
         skiplines = self.options.skiplines or 0
         for p in pages:
-            image = self.data.get_images(p)[1]
-            print image
-            if self.options.overwrite or self.data.get_lines(p) == None:
+            image = self.data.get_images(p)[project_data.DATA][1]
+            if self.options.overwrite or self.data.get_lines(p)[project_data.DATA] == None:
                 imagepath = os.path.join(self.proj_dir, image)
-                print imagepath
                 lines = linedetect.process_image(imagepath, 16)
-                print lines
                 self.data.set_lines(p, lines[skiplines:])
+        self.data.save()
 
 
     def images(self):
         baseurl = self.options.img_url or "http://www.pgdp.net/projects/%s/" % os.path.basename(self.proj_dir)
         pages = self.data.get_pages()
         for p in pages:
-            image = self.data.get_images(p)[1]
+            image = self.data.get_images(p)[project_data.DATA][1]
             imagepath = os.path.join(self.proj_dir, image)
             if os.path.exists(imagepath):
                 print imagepath, "exists"

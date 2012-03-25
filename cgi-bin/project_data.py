@@ -1,10 +1,26 @@
 #!/usr/bin/python
 # coding=utf-8
 
+"""
+Manages a "project" file which tracks the proofreading process.
+
+The project file is a python pickle file, consisting of meta and project_data sections.
+
+The meta section is a generic repository for things like titles, good words etc.
+
+The project_data section is a dictionary relating a page_id to its relevant data. This data includes
+the filenames of required image and text files and the list of lines in the image file.
+
+"""
+
 import os
 import pickle
 import hashlib
 import datetime
+
+
+DATA, STATUS, TIMESTAMP = range(3)
+STATUS_NEW = 0
 
 
 class DataException(Exception):
@@ -13,8 +29,6 @@ class DataException(Exception):
 
 class ProjectData:
 
-    IMAGES, LINES, CURRENT, ALT = range(4)#format of page diary entries
-    FILENAME, STATUS, TIMESTAMP = range(3)#format of alt file entries
 
     def __init__(self, project_file):
         self.project_file = project_file
@@ -29,8 +43,6 @@ class ProjectData:
     def save(self):
         pickle.dump((self.meta, self.project_data),
                     open(self.project_file, "w"))
-        # os.chmod(self.project_file, 0660)
-
 
 
     def get_meta(self, field):
@@ -42,81 +54,107 @@ class ProjectData:
 
 
     def add_page(self, pageid, text, images):
-        self.project_data[pageid] = [images, None, [text, 0, datetime.datetime.utcnow()], {}]
+        timestamp = datetime.datetime.utcnow()
+        self.project_data[pageid] = {"images": [images, STATUS_NEW, timestamp],
+                                     "lines": [None, STATUS_NEW, timestamp]}
+        self.set_text(pageid, text)
+
+
+    def exists(self, pageid, field=None):
+        """Returns true if the page exists and the field exists, else returns false"""
+        if (self.project_data.has_key(pageid) and
+            (field == None or self.project_data[pageid].has_key(field))):
+            return True
+        return False
+
+
+    def get_data(self, pageid, field):
+        if not self.exists(pageid, field): raise DataException
+        return self.project_data[pageid][field]
+
+
+    def set_data(self, pageid, field, data, status=STATUS_NEW):
+        if not self.exists(pageid): raise DataException
+        self.project_data[pageid][field] = [data, status, datetime.datetime.utcnow()]
 
 
     def get_pages(self):
+        """Returns an alphabetically sortded list of pageids"""
         return sorted(self.project_data.keys())
 
 
     def get_images(self, pageid):
-        if pageid not in self.project_data.keys():
-            raise DataException
-        return self.project_data[pageid][self.IMAGES]
+        """Returns an object O for which:
+           O[DATA]: (prior_image, image, next_image)
+           O[STATUS]: status_code
+           O[TIMESTAMP]: timestamp"""
+        return self.get_data(pageid, "images")
 
 
     def get_lines(self, pageid):
-        if pageid not in self.project_data.keys():
-            raise DataException
-        return self.project_data[pageid][self.LINES]
-
-
-    def set_lines(self, pageid, lines):
-        if pageid not in self.project_data.keys():
-            raise DataException
-        self.project_data[pageid][self.LINES] = lines
-        self.save()
-
-
-    def get_textdescriptor_field(self, pageid, user, field):
-        if pageid not in self.project_data.keys():
-            raise DataException
-        page_data = self.project_data[pageid]
-        if user == None:
-            return page_data[self.CURRENT][field]
-        elif page_data[self.ALT].has_key(user):
-            return page_data[self.ALT][user][field]
-        else:
-            return None
+        """Returns an object O for which:
+           O[DATA]: (line_1, line_2, ...., line_n)
+           O[STATUS]: status_code
+           O[TIMESTAMP]: timestamp"""
+        return self.get_data(pageid, "lines")
 
 
     def get_text(self, pageid, user=None):
-        filename = self.get_textdescriptor_field(pageid, user, self.FILENAME)
-        if not filename:
-            filename = self.get_textdescriptor_field(pageid, None, self.FILENAME)
-        return open(os.path.join(self.project_dir, filename)).read()
+        """Returns an object O for which:
+           O[DATA]: filename of text
+           O[STATUS]: status_code
+           O[TIMESTAMP]: timestamp
+           The text will be the last text submitted by the user for that page or,
+           if no text has yet been submitted or the user is None, the OCR text"""
+        if user and self.exists(pageid, user):
+           text_data = self.get_data(pageid, user)
+        else:
+            text_data = self.get_data(pageid, "ocr")
+        text_data[DATA] = open(os.path.join(self.project_dir, text_data[DATA])).read()
+        return text_data
 
 
-    def get_status(self, pageid, user=None):
-        return self.get_textdescriptor_field(pageid, user, self.STATUS)
+    def get_text_meta(self, pageid, user=None):
+        """Returns a tuple of the form
+             (STATUS, TIMESTAMP)
+           for the user's text or, if there is none, for the OCR text."""
+        if user and self.exists(pageid, user):
+           text_data = self.get_data(pageid, user)
+        else:
+            text_data = self.get_data(pageid, "ocr")
+        return (text_data[STATUS], text_data[TIMESTAMP])
 
 
-    def get_timestamp(self, pageid, user=None):
-        return self.get_textdescriptor_field(pageid, user, self.TIMESTAMP)
+
+    def set_lines(self, pageid, lines):
+        """Set the lines for the page PAGEID. LINES must be a list of lines."""
+        self.set_data(pageid, "lines", lines)
 
 
-    def post_text(self, pageid, user, text, status):
-        if pageid not in self.project_data.keys():
-            raise DataException
-        page_data = self.project_data[pageid]
+    def set_text(self, pageid, text, user=None):
+        """Saves the text TEXT to a file and adds the filename to the project file. TEXT must
+        be a simple stream of bytes, i.e. UTF-8 text should already be encoded."""
+        if not self.exists(pageid): raise DataException
         h  = hashlib.sha1(text).hexdigest()
         target_file = os.path.join(self.project_dir, h)
         if not os.path.exists(target_file):
             open(target_file, "w").write(text)
-        old_data = page_data[self.ALT].get(user)
-        page_data[self.ALT][user] = (h, status, datetime.datetime.utcnow())
-        #now check whether we can unlink the file
-        all_files = [page_data[self.ALT][X][self.FILENAME]
-                     for X in page_data[self.ALT].keys()] + [page_data[self.CURRENT]]
-        if old_data and old_data[self.FILENAME] not in all_files:
-            os.unlink(os.path.join(self.project_dir, old_data[self.FILENAME]))
-        self.save()
+            os.chmod(target_file, 0640)
+        if user == None: user = "ocr"
+        self.set_data(pageid, user, os.path.basename(target_file))
+        #TODO: Need to have a reference counted hash of created filenames
+        #so that we can unlink replaced files when there are no further
+        #references..
 
 
     def dump(self):
         print self.meta
         print "\nPages:\n"
         for k in sorted(self.project_data.keys()):
-            print k, self.project_data[k]
+            print k, ":"
+            for l in sorted(self.project_data[k].keys()):
+                print "  ", l, ":", self.project_data[k][l]
+            print
+
 
 
