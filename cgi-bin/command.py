@@ -8,6 +8,7 @@ import json
 import os
 import xml.etree.cElementTree as et
 import project_data
+import re
 
 data_path = "../data/"
 
@@ -15,6 +16,7 @@ data_path = "../data/"
 
 class CommandProcessor:
 
+    re_tws = re.compile(r"[^\S\n]+\n", re.UNICODE) #whitespace excluding newlines followed by a newline
 
     def __init__(self, form):
         projid = form.getfirst("projid")
@@ -73,6 +75,7 @@ class CommandProcessor:
         text = self.form.getfirst("text")
         if not text: text = ""
         if len(text) > 10240: raise CommandException(CommandException.TOOLARGETEXT)
+        text = self.re_tws.sub(r"\n", text).rstrip() #strip trailing EOL and EOS whitespace
         self.data.set_text(pageid, text, os.environ["REMOTE_ADDR"])
         self.data.save()
         print "Content-type: application/json; charset=UTF-8\n"
