@@ -41,10 +41,8 @@ class CommandProcessor:
 
 
     def list_pages(self):
-        pages = self.data.get_pages()
         available, done = [], []
-        for p in pages:
-            pageid, status, timestamp = p
+        for pageid, status, timestamp in self.data.get_pages():
             table = done if self.data.exists(pageid, os.environ["REMOTE_ADDR"]) else available
             table.append(
                 ("<tr>"
