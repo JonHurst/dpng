@@ -95,6 +95,6 @@ jQuery(
 
     //load the pagepicker to start things off
     $('#pagepicker_tables').load(cgi_path + "command.py",
-                                 {verb:"list", projid: projid});
+                                 {verb:"list", projid: projid, user: "lines"});
 
   });

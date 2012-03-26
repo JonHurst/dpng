@@ -28,7 +28,8 @@ class CommandProcessor:
             "get": self.get,
             "list": self.list_pages,
             "save": self.save,
-            "lines": self.update_lines
+            "lines": self.update_lines,
+            "reserve": self.reserve
             }
 
 
@@ -42,8 +43,10 @@ class CommandProcessor:
 
     def list_pages(self):
         available, done = [], []
-        for pageid, status, timestamp in self.data.get_pages():
-            table = done if self.data.exists(pageid, os.environ["REMOTE_ADDR"]) else available
+        user = self.form.getfirst("user")
+        if not user: user = os.environ["REMOTE_ADDR"]
+        for pageid, status, timestamp in self.data.get_pages(user):
+            table = done if status & project_data.STATUS_DONE else available
             table.append(
                 ("<tr>"
                  "<td><a href='%(pageid)s'>%(pageid)s</a></td>"
@@ -92,6 +95,18 @@ class CommandProcessor:
         json.dump("OK", sys.stdout)
 
 
+    def reserve(self):
+        #TODO: reserve just reserves all pages to the user for now. Add
+        #routine to identify and reserve a single page later
+        for pageid, status, timestamp in self.data.get_pages():
+            username = os.environ["REMOTE_ADDR"]
+            self.data.reserve(pageid, username)
+        self.data.save()
+        print "Content-type: application/json; charset=UTF-8\n"
+        json.dump("OK", sys.stdout)
+
+
+
 class CommandException(Exception):
     (UNKNOWN, NOVERB, UNKNOWNVERB, NOPROJID, NOPAGEID,
      TOOLARGETEXT, BADPAGEID, BADPROJECTFILE,
@@ -118,7 +133,7 @@ class FakeForm:
     def getfirst(self, value):
         values = {
             "projid": "projid_4f419bd5258cd",
-            "verb": "get",
+            "verb": "reserve",
             "lines" : [1000, 2000, 3000],
             "pageid" : "091",
             "text": "This is a yet another test"
@@ -133,7 +148,7 @@ class FakeForm:
 def main():
     if  "test" in sys.argv:
         form = FakeForm()
-        os.environ["REMOTE_ADDR"] = "127.0.0.2"
+        os.environ["REMOTE_ADDR"] = "127.0.0.1"
     else:
         cgitb.enable()
         form = cgi.FieldStorage()

@@ -20,8 +20,10 @@ import datetime
 
 
 DATA, STATUS, TIMESTAMP = range(3)
-STATUS_NEW = 0
 
+STATUS_NEW = 0X00
+STATUS_DONE = 0X01
+STATUS_USER = 0X10
 
 class DataException(Exception):
     pass
@@ -75,6 +77,8 @@ class ProjectData:
 
     def set_data(self, pageid, field, data, status=STATUS_NEW):
         if not self.exists(pageid): raise DataException
+        if self.exists(pageid, field):
+            status |= self.project_data[pageid][field][STATUS]
         self.project_data[pageid][field] = [data, status, datetime.datetime.utcnow()]
 
 
@@ -87,6 +91,13 @@ class ProjectData:
                  self.project_data[X][field][TIMESTAMP])
                 for X in sorted(self.project_data.keys())
                 if self.project_data[X].has_key(field)]
+
+
+    def reserve(self, pageid, user):
+        """Adds a field for USER to the page PAGEID"""
+        if self.exists(pageid, user): return
+        data = self.get_data(pageid, "ocr")
+        self.set_data(pageid, user, data[DATA], STATUS_USER)
 
 
     def get_images(self, pageid):
@@ -134,8 +145,10 @@ class ProjectData:
         if not os.path.exists(target_file):
             open(target_file, "w").write(text)
             os.chmod(target_file, 0640)
+        status = STATUS_DONE
         if user == None: user = "ocr"
-        self.set_data(pageid, user, os.path.basename(target_file))
+        else: status |= STATUS_USER
+        self.set_data(pageid, user, os.path.basename(target_file), status)
         #TODO: Need to have a reference counted hash of created filenames
         #so that we can unlink replaced files when there are no further
         #references..

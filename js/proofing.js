@@ -337,10 +337,23 @@ function proofreader() {
       page_picker.show();
     }
 
+
+    function reserve(proj_id) {
+      jQuery.post(cgi_path + "command.py",
+                  {verb:"reserve", projid: proj_id}, reserve_callback);
+    }
+
+
+    function reserve_callback(ob, status) {
+      page_picker.show();
+    }
+
+
     return {
       get_page: get_page,
       submit: submit,
-      list: list
+      list: list,
+      reserve: reserve
     };
   }
   var command = command_func();
@@ -498,8 +511,9 @@ function proofreader() {
     }
     $('#control_container').resizable({stop: on_control_resize_stop});
 
-    //Start with list of files
-    command.list(projid);
+
+    //Reserve pages and start
+    command.reserve(projid);
   };
 
 
