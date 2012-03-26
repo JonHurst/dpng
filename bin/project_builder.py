@@ -42,9 +42,11 @@ class ProjectBuilder:
         context_images = zip([None] + images[:-1], images, images[1:] + [None])
         encoding = self.options.encoding or "utf-8"
         for c, f in enumerate(files):
+            pageid = os.path.basename(f)[:-4]
+            if self.data.exists(pageid) and not self.options.overwrite: continue
             data = unicode(open(f).read(), encoding)
             data = self.re_tws.sub(r"\n", data).rstrip() #strip trailing EOL and EOS whitespace
-            self.data.add_page(os.path.basename(f)[:-4],
+            self.data.add_page(pageid,
                                data.encode("utf-8"),
                                context_images[c])
         self.data.save()
