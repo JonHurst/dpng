@@ -57,19 +57,7 @@ jQuery(
     }
 
     //if a line is clicked, remove it; if the image is clicked where there is no line div,
-    //add one. Send changes to server immediately.
-    function on_linehere_click(div, line_positions) {
-      var line;
-      if(this.id)
-        line = +(this.id.substr(5));
-      else
-        var height_i = $("#image").height();
-        var image_position = $("#image").offset();
-
-        line = Math.floor((div.offset().top - image_position.top + div.height() / 2) * 10000 / height_i);
-      line_positions.push(line);
-    }
-
+    //add one.
 
     function on_imagecontainer_click(event) {
       if(event.target.className == "linehere")
@@ -81,18 +69,38 @@ jQuery(
         div_position.top = event.pageY - 3;
         div.offset(div_position);
         }
-      var line_positions = [];
-      $("div.linehere").each(function() {on_linehere_click($(this), line_positions);});
-      line_positions.sort(function(a, b) {return a - b; });
-      var json_lines = JSON.stringify(line_positions);
-      jQuery.post(cgi_path + "command.py", {verb:"lines", lines:json_lines,
-                                            projid: projid, pageid: pageid});
     }
 
 
     $('#image_container').click(on_imagecontainer_click);
 
 
+    function on_submit_click(event) {
+      var line_positions = [];
+      $("div.linehere").each(function(index, element) {
+        var line;
+        if(element.id)
+          line = +(element.id.substr(5));
+        else {
+          var height_i = $("#image").height();
+          var image_position = $("#image").offset();
+          line = Math.floor(($(element).offset().top - image_position.top + $(element).height() / 2) * 10000 / height_i);
+        }
+        line_positions.push(line);});
+      line_positions.sort(function(a, b) {return a - b; });
+      var json_lines = JSON.stringify(line_positions);
+      jQuery.post(cgi_path + "command.py", {verb:"lines", lines:json_lines,
+                                            projid: projid, pageid: pageid}, submit_callback);
+    }
+    $('#submit').click(on_submit_click);
+
+
+    function submit_callback(ob, status) {
+      $('#pagepicker_tables').load(cgi_path + "command.py",
+        {verb:"list", projid: projid, user: "lines"});
+    }
+
+    
     //load the pagepicker to start things off
     $('#pagepicker_tables').load(cgi_path + "command.py",
                                  {verb:"list", projid: projid, user: "lines"});

@@ -89,7 +89,7 @@ class CommandProcessor:
         lines = self.form.getfirst("lines")
         if not lines:  raise CommandException(CommandException.NOLINES)
         lines = json.loads(lines)
-        self.data.set_lines(pageid, lines)
+        self.data.set_lines(pageid, lines, project_data.STATUS_DONE)
         self.data.save()
         print "Content-type: application/json; charset=UTF-8\n"
         json.dump("OK", sys.stdout)

@@ -131,9 +131,9 @@ class ProjectData:
         return text_data
 
 
-    def set_lines(self, pageid, lines):
+    def set_lines(self, pageid, lines, status=STATUS_NEW):
         """Set the lines for the page PAGEID. LINES must be a list of lines."""
-        self.set_data(pageid, "lines", lines)
+        self.set_data(pageid, "lines", lines, status)
 
 
     def set_text(self, pageid, text, user=None):

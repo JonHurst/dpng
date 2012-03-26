@@ -9,6 +9,7 @@
     position:absolute;
     top: 0;
     left: 0;
+    width:15em;
 }
 
 #image_container
@@ -34,4 +35,9 @@
     opacity: 0.2;
     cursor: pointer;
     overflow: hidden;
+}
+
+#submit
+{
+    width: 100%;
 }
