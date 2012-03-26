@@ -7,8 +7,8 @@ import subprocess
 import sys
 import re
 
-TYPE_UNKNOWN, TYPE_WORD, TYPE_SPACE, TYPE_PUNC, TYPE_NOTE = range(5)
-# descriptors = ["Unknown", "Word", "Whitespace", "Punctuation", "Note"]
+TYPE_UNKNOWN, TYPE_WORD, TYPE_DIGIT, TYPE_SPACE, TYPE_PUNC, TYPE_NOTE = range(6)
+# descriptors = ["Unknown", "Word", "Digit", "Whitespace", "Punctuation", "Note"]
 
 stealth_scannos = set(["he", "be"])
 
@@ -23,13 +23,22 @@ def tokenise(text):
     tokens = []
     regexp_notes = re.compile(r"(\[\*\*[^\]]*\])", re.UNICODE)
     regexp_words = re.compile(r"([\w]+)", re.UNICODE)
+    regexp_digits = re.compile(r"([\d]+)", re.UNICODE)
     regexp_whitespace = re.compile(r"([\s]+)", re.UNICODE)
+
+    def process_digits(text):
+        text_sections = regexp_digits.split(text)
+        for c, s in enumerate(text_sections):
+            if c % 2:
+                tokens.append([s, TYPE_DIGIT])
+            else:
+                tokens.append([s, TYPE_WORD])
 
     def process_words(text):
         text_sections = regexp_words.split(text)
         for c, s in enumerate(text_sections):
             if c % 2:
-                tokens.append([s, TYPE_WORD])
+                process_digits(s)
             else:
                 process_whitespace(s)
 
@@ -75,7 +84,7 @@ def calculate_classes(tokens, spelling_errors, stealth_scannos):
                 (tokens[c][0][-1] in ":;!?" and tokens[c + 1][1] != TYPE_SPACE) or
                 # . and , that are not followed by a space and are not single and followed by a number
                 (tokens[c][0][-1] in ".," and tokens[c + 1][1] != TYPE_SPACE and not
-                 (len(tokens[c][0]) == 1 and tokens[c + 1][0].isdigit()))):
+                 (len(tokens[c][0]) == 1 and tokens[c + 1][1] == TYPE_DIGIT))):
                 tokens[c].append("error")
         elif t[1] == TYPE_WORD:
             if t[0] in spelling_errors:
@@ -84,6 +93,8 @@ def calculate_classes(tokens, spelling_errors, stealth_scannos):
                 tokens[c].append("stealth")
         elif t[1] == TYPE_NOTE:
             tokens[c].append("note")
+        elif t[1] == TYPE_DIGIT:
+            tokens[c].append("digit")
     del tokens[-1]
 
 
@@ -111,7 +122,7 @@ this is not a $5,000.00 error
 
 INTRODUCTION [**Note]
 
-caféq The following narrative falls naturally into three
+caféq The fol1owing narrative falls naturally into three
 divisions, corresponding to distinct and clearly
 marked periods of Sophy's life. Of the first and
 second-her childhood at Morpingham and her so-

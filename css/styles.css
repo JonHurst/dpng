@@ -164,7 +164,7 @@ span.punc
     font-weight:bold;
 }
 
-span.stealth
+span.stealth, span.digit
 {
     border-bottom: solid green 2px;
 }
