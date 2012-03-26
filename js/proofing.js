@@ -166,6 +166,27 @@ function proofreader() {
     }
 
 
+    function local_validate(text) {
+      var lines = [];
+      var c;
+      var text_ob = $("<div id='text'/>");
+      text_ob.empty();
+      for(c = 0; c < all_lines.length - 1; c++) {
+        lines[c] = text.slice(all_lines[c], all_lines[c + 1] - 1);
+      }
+      lines[all_lines.length - 1] = text.slice(all_lines[all_lines.length - 1], text.length);
+      for(c = 0; c < lines.length; c++) {
+        if(lines[c].length)
+          text_ob.append($("<div class='line'/>").text(lines[c]));
+        else
+          text_ob.append("<div class='blank'/>");
+      }
+      num_lines = all_lines.length;
+      $('#text').replaceWith(text_ob);
+      select();
+    }
+
+
     function change_text(text) {
       $('#text_container').css('display', 'block');//we may have hidden when showing editor
       text = text.replace(/[^\S\n]+\n/g, "\n");//strip EOL whitespace
@@ -183,6 +204,7 @@ function proofreader() {
         text_dirty = true;
         $('#status').text("Not saved");
       }
+      local_validate(text);
       // console.log(text_history);
       $('#text_container').load(cgi_path + "proofing_validator.py", {"text": text}, validator_callback);
     }
