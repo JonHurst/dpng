@@ -12,11 +12,12 @@ TYPE_UNKNOWN, TYPE_WORD, TYPE_DIGIT, TYPE_SPACE, TYPE_PUNC, TYPE_NOTE = range(6)
 
 stealth_scannos = set(["he", "be"])
 
-def aspell_text(text):
+def aspell_text(text, goodwords):
+    goodwords = set(unicode(goodwords, "utf-8").split(";"))
     aspell_output = subprocess.Popen(["/usr/bin/aspell", "list", "--encoding=utf-8"],
                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE
                                      ).communicate(text.encode("utf-8"))[0]
-    return set(unicode(aspell_output, "utf-8").splitlines())
+    return set(unicode(aspell_output, "utf-8").splitlines()) - goodwords
 
 
 def tokenise(text):
@@ -158,7 +159,7 @@ else:
     else:
         text = unicode(form['text'].value, "utf-8")
 print "Content-type: text/html; charset=UTF-8\n"
-spelling_errors = aspell_text(text)
+spelling_errors = aspell_text(text, form.getfirst("goodwords", ""))
 tokens = apply_language_specials(tokenise(text))
 calculate_classes(tokens, spelling_errors, stealth_scannos)
 sys.stdout.write(build_text(tokens).encode("utf-8"))

@@ -108,8 +108,10 @@ function proofreader() {
     var text_history = [];
     var text_dirty;
     var lines, all_lines;
+    var goodwords;
 
-    function init(text) {
+    function init(text, _goodwords) {
+      goodwords = _goodwords || "";
       current_line = 0;
       text_container.change_text(text);
       text_dirty = false;
@@ -206,7 +208,7 @@ function proofreader() {
       }
       local_validate(text);
       // console.log(text_history);
-      $('#text_container').load(cgi_path + "proofing_validator.py", {"text": text}, validator_callback);
+      $('#text_container').load(cgi_path + "proofing_validator.py", {"text": text, "goodwords": goodwords}, validator_callback);
     }
 
 
@@ -323,7 +325,7 @@ function proofreader() {
       page_id = ob[0];
       $('#title').text(ob[1]);
       $('#pageid').text(page_id);
-      text_container.init(ob[2]);
+      text_container.init(ob[2], ob[5]);
       image_container.init(ob[3], ob[4]);
       $('#modal_greyout').css("display", "none");
     }

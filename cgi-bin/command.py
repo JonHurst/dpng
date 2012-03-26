@@ -67,7 +67,8 @@ class CommandProcessor:
         json.dump([pageid, self.data.get_meta("title"), text_data[project_data.DATA],
                    [os.path.join(self.project_dir, X) if X else None
                     for X in self.data.get_images(pageid)[project_data.DATA]],
-                   self.data.get_lines(pageid)[project_data.DATA]], sys.stdout)
+                   self.data.get_lines(pageid)[project_data.DATA],
+                   self.data.get_meta("goodwords")], sys.stdout)
 
 
     def save(self):

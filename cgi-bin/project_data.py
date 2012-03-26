@@ -48,7 +48,7 @@ class ProjectData:
 
 
     def get_meta(self, field):
-        return self.meta[field]
+        return self.meta.get(field)
 
 
     def set_meta(self, field, data):

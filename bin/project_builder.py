@@ -80,9 +80,14 @@ class ProjectBuilder:
                 os.chmod(imagepath, 0640)
 
 
+    def add_goodwords(self):
+        self.data.set_meta("goodwords",
+                           ";".join([unicode(X, "utf-8").rstrip().encode("utf-8")
+                                     for X in open(os.path.join(self.proj_dir, "goodwords")).readlines()]))
+        self.data.save()
 
 def main():
-    usage = "usage: %prog [build|lines|images|dump] [options]"
+    usage = "usage: %prog [build|lines|goodwords|images|dump] [options]"
     parser = optparse.OptionParser(usage=usage)
     parser.add_option("-e", "--encoding", dest="encoding",
                       help="The encoding of the source text files")
@@ -107,6 +112,8 @@ def main():
         pb.images()
     elif command == "dump":
         pb.data.dump()
+    elif command == "goodwords":
+        pb.add_goodwords()
     else:
         parser.print_help()
 
