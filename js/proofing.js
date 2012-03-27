@@ -486,7 +486,6 @@ function proofreader() {
     function cancel() {
       $('#modal_greyout').css("display", "none");
       hide();
-      keyhandler.normal();
     }
     $('#cancel').click(cancel);
 
@@ -496,7 +495,6 @@ function proofreader() {
       var href = $(event.target).attr('href');
       if(href) {
         hide();
-        keyhandler.normal();
         command.get_page(projid, href);
       }
     }
@@ -514,6 +512,7 @@ function proofreader() {
     function hide() {
       $('#pagepicker').css("display", "none");
       command_bar.enabled(true);
+      keyhandler.normal();
     }
 
     function list_callback(ob, status) {
