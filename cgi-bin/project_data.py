@@ -17,6 +17,7 @@ import os
 import pickle
 import hashlib
 import datetime
+import fcntl
 
 
 DATA, STATUS, TIMESTAMP = range(3)
@@ -32,19 +33,41 @@ class DataException(Exception):
 class ProjectData:
 
 
-    def __init__(self, project_file):
+    def __init__(self, project_file, write=False):
         self.project_file = project_file
         self.project_dir = os.path.dirname(project_file)
-        if os.path.isfile(project_file):
-            self.meta, self.project_data = pickle.load(open(self.project_file))
+        self.lock = fcntl.LOCK_EX if write else fcntl.LOCK_SH
+        if os.path.exists(self.project_file):
+            self.project_file = open(project_file, "rb+")
+        else:
+            self.project_file = open(project_file, "wb+")
+        fcntl.lockf(self.project_file, self.lock)
+        pickle_string = self.project_file.read()
+        if pickle_string:
+            self.meta, self.project_data = pickle.loads(pickle_string)
         else:
             self.meta = {}
             self.project_data = {}
 
 
+    def __del__(self):
+        self.unlock()
+
+
     def save(self):
-        pickle.dump((self.meta, self.project_data),
-                    open(self.project_file, "w"))
+        if self.lock != fcntl.LOCK_EX or not self.project_file: raise DataException
+        self.project_file.seek(0)
+        self.project_file.truncate()
+        pickle.dump((self.meta, self.project_data), self.project_file)
+        self.project_file.flush()
+        self.unlock()
+        self.project_file = None
+
+
+    def unlock(self):
+        if self.lock != fcntl.LOCK_UN:
+            fcntl.lockf(self.project_file, fcntl.LOCK_UN)
+        self.lock = fcntl.LOCK_UN
 
 
     def get_meta(self, field):

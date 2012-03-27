@@ -30,7 +30,6 @@ class ProjectBuilder:
         if not os.path.isdir(self.proj_dir): raise BuilderException(BuilderException.BAD_DIRECTORY)
         self.options = options
         self.project_file = os.path.join(self.proj_dir, "project")
-        self.data = project_data.ProjectData(self.project_file)
 
 
     def build(self):
@@ -38,39 +37,41 @@ class ProjectBuilder:
         files = [os.path.abspath(X) for X in filenames]
         files.sort()
         images = [os.path.basename(X[:-3] + "png") for X in files]
-        self.data.set_meta("title", self.options.title or os.path.basename(self.proj_dir))
         context_images = zip([None] + images[:-1], images, images[1:] + [None])
         encoding = self.options.encoding or "utf-8"
+        data = project_data.ProjectData(self.project_file, True)
+        data.set_meta("title", self.options.title or os.path.basename(self.proj_dir))
         for c, f in enumerate(files):
             pageid = os.path.basename(f)[:-4]
-            if self.data.exists(pageid) and not self.options.overwrite: continue
-            data = unicode(open(f).read(), encoding)
-            data = self.re_tws.sub(r"\n", data).rstrip() #strip trailing EOL and EOS whitespace
-            self.data.add_page(pageid,
-                               data.encode("utf-8"),
-                               context_images[c])
-        self.data.save()
+            if data.exists(pageid) and not self.options.overwrite: continue
+            text = unicode(open(f).read(), encoding)
+            text = self.re_tws.sub(r"\n", text).rstrip() #strip trailing EOL and EOS whitespace
+            data.add_page(pageid,
+                          text.encode("utf-8"),
+                          context_images[c])
+        data.save() #also unlocks
         os.chmod(self.project_file, 0660)
 
 
-
     def lines(self):
-        pages = [X[0] for X in self.data.get_pages()]
         skiplines = self.options.skiplines or 0
+        data = project_data.ProjectData(self.project_file, True)
+        pages = [X[0] for X in data.get_pages()]
         for p in pages:
-            image = self.data.get_images(p)[project_data.DATA][1]
-            if self.options.overwrite or self.data.get_lines(p)[project_data.DATA] == None:
+            image = data.get_images(p)[project_data.DATA][1]
+            if self.options.overwrite or data.get_lines(p)[project_data.DATA] == None:
                 imagepath = os.path.join(self.proj_dir, image)
                 lines = linedetect.process_image(imagepath, 16)
-                self.data.set_lines(p, lines[skiplines:])
-        self.data.save()
+                data.set_lines(p, lines[skiplines:])
+        data.save() #also unlocks
 
 
     def images(self):
         baseurl = self.options.img_url or "http://www.pgdp.net/projects/%s/" % os.path.basename(self.proj_dir)
         pages = [X[0] for X in self.data.get_pages()]
+        data = project_data.ProjectData(self.project_file)
         for p in pages:
-            image = self.data.get_images(p)[project_data.DATA][1]
+            image = data.get_images(p)[project_data.DATA][1]
             imagepath = os.path.join(self.proj_dir, image)
             if os.path.exists(imagepath):
                 print imagepath, "exists"
@@ -78,13 +79,22 @@ class ProjectBuilder:
                 print "Downloading", baseurl + "/" + image, "to", imagepath
                 urllib.urlretrieve(baseurl + "/" + image, imagepath)
                 os.chmod(imagepath, 0640)
+        data.unlock()
 
 
     def add_goodwords(self):
-        self.data.set_meta("goodwords",
-                           ";".join([unicode(X, "utf-8").rstrip().encode("utf-8")
-                                     for X in open(os.path.join(self.proj_dir, "goodwords")).readlines()]))
-        self.data.save()
+        data = project_data.ProjectData(self.project_file, True)
+        data.set_meta("goodwords",
+                      ";".join([unicode(X, "utf-8").rstrip().encode("utf-8")
+                                for X in open(os.path.join(self.proj_dir, "goodwords")).readlines()]))
+        data.save() #also unlocks
+
+
+    def dump(self):
+        data = project_data.ProjectData(self.project_file)
+        data.dump()
+        data.unlock()
+
 
 def main():
     usage = "usage: %prog [build|lines|goodwords|images|dump] [options]"
@@ -111,7 +121,7 @@ def main():
     elif command == "images":
         pb.images()
     elif command == "dump":
-        pb.data.dump()
+        pb.dump()
     elif command == "goodwords":
         pb.add_goodwords()
     else:
