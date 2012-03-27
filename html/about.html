@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Experimental proofreading control</title>
+    <style type="text/css">
+      body {background-color: #E0E0E0; color:black;}
+      #instructions  {background-color:white; max-width:50em; margin:auto; padding: 1em;}
+      table {margin:auto; border:2px solid black; border-collapse:collapse;}
+      tr, td, th {border: 1px solid black; padding: 0.25em 1em;}
+      p {padding: 0.5em 1em;}
+      li {padding: 1em;}
+    </style>
+  </head>
+  <body>
+      <div id="instructions">
+        <h1>The interface</h1>
+
+        <p>This is an experimental proofreading interface that I will, after a great deal more
+        testing, be integrating into DP as a third control option. It can be considered to be
+        licenced under the GPLv3 — I'll release the source code as soon as this preliminary test is
+        done.</p>
+
+        <p>The interface uses some more recent web technologies, so you will need a recent
+        browser. It is regularly tested under Firefox and Chrome. Any recent version (last year or
+        so) should work fine. It is also occasionally tested in IE 8 and Safari. Older versions of
+        IE will probably not work.</p>
+
+        <p>The control is not currently hooked up to the DP servers, so there is no danger of
+        damaging the main site.</p>
+
+        <p>The control is designed to be used mainly with the keyboard but also has a simple
+        mouse/touch interface. See <a href="controls.html">proofreader controls</a> for details. I
+        haven't tested on tablets yet because I don't own one, but it should work (please let me
+        know if it doesn't!).</p>
+
+        <h1>The test</h1>
+
+        <p>This test consists of 10 pages of "Sophy of Kravonia". It uses a roundless system;
+        everyone does P1 and I will merge the results to get a final version. I will release a page
+        detailing all the diffs once I have sufficient data. Please make a note of your user number
+        (actually your IP address) which is displayed in the top right of the page list if you want
+        to check your work.</p>
+
+        <p>Please proofread according to the DP <a
+        href="http://www.pgdp.net/c/faq/proofreading_guidelines.php"> proofreading guidelines</a>.</p>
+
+
+        <h1>Features</h1>
+
+        <p>So far, the following features have been implemented:</p>
+
+        <ul>
+          <li>Synchronised scrolling and highlighting. A "current line" is highlighted in the image
+          and the text to help your eye scan easily between the two versions. If the line
+          synchronisation is lost (this usually occurs as a result of clothing hyphens) they can be
+          re-synchronised by moving the highlight in the image pane only.</li>
+
+          <li>Resizability. Using the handle in the bottom left hand corner of the control, you can
+          set the size. As you change the width, the image zooms in and out.</li>
+
+          <li>Continuous validation. Every time you close the editor after making a change, the text
+          is sent to the server to be checked. So far, all punctuation is highlighted green, digits
+          are underlined green, spelling errors are underlined amber and end of line hyphens and
+          incorrect punctuation are underlined red. The final version should also underline in green
+          any word that is a member of a stealth scanno pair, but, since I don't yet have a list of
+          these, for the moment you just get "he" and "be".</li>
+
+          <li>Context pages. The previous and next page images are available by scrolling the image
+          window beyond the limits of the current page. Ultimately, this could make it simple to
+          move hyphenated words up from the next page, thereby saving the PPers a job.</li>
+        </ul>
+
+        <h1>Tips</h1>
+
+        <p>I have found that the interface works best with multiple passes:</p>
+
+        <ul>
+          <li>Pass 1: Looking at the top pane, move the highlight to the first line of each
+          paragraph and check on the bottom pane that there is a blank line above it.</li>
+
+          <li>Pass 2: Check and if necessary correct all underlined items.</li>
+
+          <li>Pass 3: Compare each line, paying particular attention to the highlighted
+          punctuation.</li>
+        </ul>
+
+        <p>After each pass, you can press "h" to return to the top line.</p>
+
+        <p>Enjoy!</p>
+    </div>
+  </body>
+</html>
