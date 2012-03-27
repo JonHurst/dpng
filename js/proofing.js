@@ -535,6 +535,12 @@ function proofreader() {
     }
     $('#control_container').resizable({stop: on_control_resize_stop});
 
+    $('#menu_bar a').click(function(event) {
+                             console.log($(this).attr('href'));
+                             window.open($(this).attr('href'));
+                             event.preventDefault();
+                             });
+
 
     //Reserve pages and start
     command.reserve(projid);
