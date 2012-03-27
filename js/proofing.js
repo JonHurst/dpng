@@ -486,6 +486,7 @@ function proofreader() {
     function cancel() {
       $('#modal_greyout').css("display", "none");
       hide();
+      keyhandler.normal();
     }
     $('#cancel').click(cancel);
 
