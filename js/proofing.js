@@ -401,26 +401,30 @@ function proofreader() {
 
     function default_keydown_handler(event) {
       // console.log("event.which: " + event.which + ", event.keyCode: " + event.keyCode + ", event.shiftKey: " + event.shiftKey);
-      if(event.which == 74) { //j
+      if(event.which == 74 || event.which == 40) { //j or down arrow
         image_container.next();
         if(!event.shiftKey)
           text_container.next();
+        event.stopPropagation();//prevent up arrow scrolling focused pane
       }
       else if(event.which == 78) {//n
         image_container.next();
       }
-      else if(event.which == 75) { //k
+      else if(event.which == 75 || event.which == 38) { //k or up arrow
         image_container.prev();
         if(!event.shiftKey)
           text_container.prev();
+        event.stopPropagation();//prevent down arrow scrolling focused pane
       }
-      else if(event.which == 69 || event.which == 73) { //e = start editor
+      else if(event.which == 69 || event.which == 73) { //e or i = start editor
         text_container.edit();
         event.preventDefault(); //prevent keystroke reaching editor
+        event.stopPropagation();
       }
-      else if(event.which == 72) { //h
+      else if(event.which == 72 || event.which == 36) { //h or home
         text_container.select(0);
         image_container.select(0);
+        event.stopPropagation();//prevent home button scrolling focused pane
         }
     }
 
