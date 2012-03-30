@@ -92,7 +92,7 @@ class ProjectBuilder:
 
     def dump(self):
         data = project_data.ProjectData(self.project_file)
-        data.dump()
+        data.dump(self.options.processed)
         data.unlock()
 
 
@@ -111,6 +111,8 @@ def main():
                       help="Lines to skip when processing lines (for running headers)")
     parser.add_option("-o", "--overwrite", dest="overwrite", action="store_true",
                       help="Overwrite exisitng data")
+    parser.add_option("-p", "--processed", dest="processed", action="store_true",
+                      help="Only include blocks with STATUS_DONE flag set when dumping")
     (options, args) = parser.parse_args()
     pb = ProjectBuilder(options)
     command = args[0] if len(args) else None

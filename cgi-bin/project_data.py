@@ -177,12 +177,13 @@ class ProjectData:
         #references..
 
 
-    def dump(self):
+    def dump(self, only_done=False):
         print self.meta
         print "\nPages:\n"
         for k in sorted(self.project_data.keys()):
             print k, ":"
             for l in sorted(self.project_data[k].keys()):
+                if only_done and not self.project_data[k][l][STATUS] & STATUS_DONE: continue
                 print "  ", l, ":", self.project_data[k][l]
             print
 
