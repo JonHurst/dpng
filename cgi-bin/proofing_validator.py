@@ -151,15 +151,17 @@ by Sophy to her lifelong friend have, with some
 few exceptions, perished. Miss Robins accounts for
 this-and in view of her careful preservation of
 later correspondence, her apology must be accept-"""
+    goodwords = ""
 else:
     # cgitb.enable()
     form = cgi.FieldStorage()
+    goodwords = form.getfirst("goodwords", "")
     if not form.has_key('text'):
         text = u""
     else:
         text = unicode(form['text'].value, "utf-8")
 print "Content-type: text/html; charset=UTF-8\n"
-spelling_errors = aspell_text(text, form.getfirst("goodwords", ""))
+spelling_errors = aspell_text(text, goodwords)
 tokens = apply_language_specials(tokenise(text))
 calculate_classes(tokens, spelling_errors, stealth_scannos)
 sys.stdout.write(build_text(tokens).encode("utf-8"))
