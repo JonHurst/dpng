@@ -418,6 +418,7 @@ function proofreader() {
         image_container.next();
         if(!event.shiftKey)
           text_container.next();
+        event.preventDefault();
         event.stopPropagation();//prevent up arrow scrolling focused pane
       }
       else if(event.which == 78) {//n
@@ -427,6 +428,7 @@ function proofreader() {
         image_container.prev();
         if(!event.shiftKey)
           text_container.prev();
+        event.preventDefault();
         event.stopPropagation();//prevent down arrow scrolling focused pane
       }
       else if(event.which == 69 || event.which == 73) { //e or i = start editor
@@ -437,6 +439,7 @@ function proofreader() {
       else if(event.which == 72 || event.which == 36) { //h or home
         text_container.select(0);
         image_container.select(0);
+        event.preventDefault(); 
         event.stopPropagation();//prevent home button scrolling focused pane
         }
     }
