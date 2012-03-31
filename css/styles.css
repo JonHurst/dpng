@@ -332,3 +332,8 @@ div.current_line span
 {
     cursor: pointer;
 }
+
+#status.warn
+{
+    background-color: red;
+}

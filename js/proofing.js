@@ -115,7 +115,7 @@ function proofreader() {
       current_line = 0;
       text_container.change_text(text);
       text_dirty = false;
-      $('#status').text("Unchanged");
+      $('#status').removeClass("warn").text("Unchanged");
     }
 
 
@@ -215,7 +215,7 @@ function proofreader() {
       find_lines(text);
       if(text_history.length > 1) {
         text_dirty = true;
-        $('#status').text("Not saved");
+        $('#status').addClass("warn").text("Not saved");
       }
       local_validate(text);
       // console.log(text_history);
@@ -235,7 +235,7 @@ function proofreader() {
 
     function get_text() {return text_history[text_history.length - 1];}
     function is_dirty() {return text_dirty;}
-    function set_clean(){text_dirty = false; $('#status').text("Saved");}
+    function set_clean(){text_dirty = false; $('#status').removeClass("warn").text("Saved");}
 
     function click(event) {
       //find clicked line
