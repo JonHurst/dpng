@@ -52,7 +52,6 @@ body
 #text
 {
     position: relative;
-    padding: 100% 0;
 }
 
 #editor
@@ -123,8 +122,8 @@ body
     font-size: 14pt;
     background-color: white;
     color: black;
-    padding: 0 7.5%;
-    line-height: 1.5em;
+    padding-left:2em;
+    line-height: 1.5;
 }
 
 .blank
@@ -142,11 +141,26 @@ body
 textarea
 {
     position: absolute;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
     width: 100%;
+    padding-left: 2em;
+    padding-left: calc(2em - 1px);
+    padding-left: -moz-calc(2em - 1px);
     height: 100%;
     font-size: 14pt;
+    line-height: 1.5;
     font-family: terminus, courier, monospace, sans-serif;
+    border: none;
+    resize: none;
+    background-color: #FFFFA0;
 }
+
+#close_editor {
+    background-color: #FFFFC0;
+}
+
+
 
 span.error
 {
@@ -312,4 +326,9 @@ button
     text-align: right;
     color: grey;
     font-size: 0.8em;
+}
+
+div.current_line span
+{
+    cursor: pointer;
 }

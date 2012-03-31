@@ -160,10 +160,21 @@ function proofreader() {
     function prev() {move(-1);}
 
 
-    function edit() {
+    function edit(element) {
       var text = text_history[text_history.length -1];
       var caret_pos = lines[current_line];
+      //I feel so dirty... have to browser sniff for Opera because it includes newline
+      //characters in the count for the caret
+      var opera = false;
+      if(navigator.userAgent.toLowerCase().match(/opera/)) {
+        caret_pos += current_line;
+         }
       $('#text_container').css('display', 'none');
+      if(element) {
+        while((element = element.previousSibling)) {
+          caret_pos += element.textContent.length;
+        }
+      }
       editor.activate(text, caret_pos);
     }
 
@@ -235,8 +246,9 @@ function proofreader() {
       while((div = div.previousSibling)){
         if($(div).hasClass("line")) line++;
       }
-      if(line == current_line)
-        edit();
+      event.target = event.target || event.srcElement;
+      if(line == current_line && event.target.nodeName == "SPAN")
+        edit(event.target);
       else {
         var offset = select(line);
         image_container.move(offset);
@@ -291,8 +303,9 @@ function proofreader() {
           }
         char_pos++;
       }
+      total_lines++;
       var row_height = ta.scrollHeight / total_lines;
-      ta.scrollTop = caret_line * row_height - ta.clientHeight / 2;
+      ta.scrollTop = caret_line * row_height - (ta.clientHeight - row_height)/ 2;
       //set focus to the control
       ta.focus();
     }

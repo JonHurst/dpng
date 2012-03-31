@@ -104,6 +104,8 @@ def build_text(tokens):
     for t in tokens:
         if len(t) > 2: #classes appended
             token_join += "<span class='%s'>%s</span>" % (" ".join(t[2:]), cgi.escape(t[0]))
+        elif t[1] == TYPE_WORD:
+            token_join += "<span>" + cgi.escape(t[0]) + "</span>"
         else:
             token_join += cgi.escape(t[0])
     output = ""
