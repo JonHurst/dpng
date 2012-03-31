@@ -172,7 +172,7 @@ function proofreader() {
       $('#text_container').css('display', 'none');
       if(element) {
         while((element = element.previousSibling)) {
-          caret_pos += element.textContent.length;
+          caret_pos += $(element).text().length;
         }
       }
       editor.activate(text, caret_pos);
