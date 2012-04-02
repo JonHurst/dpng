@@ -95,7 +95,7 @@ def calculate_classes(tokens, spelling_errors, stealth_scannos):
         if t[1] == TYPE_PUNC:
             tokens[c].append("punc")
             #hyphen at end of line
-            if ((t[0].endswith("-") and tokens[c+1][0] == "\n") or
+            if (#(t[0].endswith("-") and tokens[c+1][0] == "\n") or
                 #punctuation with space both sides that is not a 3 dot  ellipsis
                 (tokens[c][0] != "..." and tokens[c-1][1] == TYPE_SPACE and tokens[c+1][1] == TYPE_SPACE) or
                 #end of word punctuation without a following space
