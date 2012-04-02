@@ -60,7 +60,7 @@ class CommandProcessor:
         done = template % ("Done", "".join(done)) if done else ""
         print "Content-type: text/html; charset=UTF-8\n"
         print "<p id='username'>%s</p>" % user
-        print "<div id='pagepicker_tables'>", available, done, "</div>"
+        print available, done
 
 
     def get(self):

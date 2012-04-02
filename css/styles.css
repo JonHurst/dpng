@@ -220,7 +220,7 @@ span.stealth, span.digit
 {
     /* display: none; */
     position: absolute;
-    height: 100%;
+    max-height: 100%;
     width: 100%;
     top: 0;
     z-index: 2;
@@ -233,7 +233,7 @@ span.stealth, span.digit
     background-color: white;
     width: 30em;
     margin-top: 3em;
-    padding: 0 1em 1em 1em;
+    padding: 0 0 1em 1em;
     border: solid black 1px;
     border-radius: 5px;
     -moz-box-shadow: 0 0 5px 5px #888;
@@ -251,6 +251,7 @@ span.stealth, span.digit
 {
     width:80%;
     margin: auto;
+    overflow: auto;
     border: solid black 2px;
     text-align: center;
     border-collapse: collapse;
@@ -275,7 +276,7 @@ button
 
 #pagepicker_tables
 {
-    max-height: 30%;
+    max-height: 30em;
     overflow: auto;
 }
 
