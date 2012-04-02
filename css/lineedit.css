@@ -16,13 +16,14 @@
 {
     position: relative;
     margin-left: 15em;
-    width: 600px;
+    width: 550px;
 }
 
 #image
 {
     cursor: crosshair;
-    width: 600px;
+    width: 550px;
+    border: 1px blue dotted;
 }
 
 .linehere
