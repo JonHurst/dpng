@@ -14,10 +14,27 @@ stealth_scannos = set(["he", "be"])
 
 def aspell_text(text, goodwords):
     goodwords = set(unicode(goodwords, "utf-8").split(";"))
-    aspell_output = subprocess.Popen(["/usr/bin/aspell", "list", "--encoding=utf-8"],
+    aspell_output_en = subprocess.Popen(["/usr/bin/aspell", "list", "--encoding=utf-8", "--lang=en"],
                                      stdin=subprocess.PIPE, stdout=subprocess.PIPE
                                      ).communicate(text.encode("utf-8"))[0]
-    return set(unicode(aspell_output, "utf-8").splitlines()) - goodwords
+    aspell_output_fr = subprocess.Popen(["/usr/bin/aspell", "list", "--encoding=utf-8", "--lang=fr"],
+                                     stdin=subprocess.PIPE, stdout=subprocess.PIPE
+                                     ).communicate(text.encode("utf-8"))[0]
+    en_errors = set(unicode(aspell_output_en, "utf-8").splitlines())
+    fr_errors = set(unicode(aspell_output_fr, "utf-8").splitlines())
+    #french reports error in hyphenated word as whole hyphenated word e.g. zbreakfast-room. Since we
+    #tokenise "-" as punctuation, we need to find out if either side is a spelling error. English seems
+    #to do this already.
+    hyphenated = ""
+    for e in fr_errors:
+        if "-" in e: hyphenated += e.replace("-", " ") + " "
+    if hyphenated:
+        aspell_output_fr_hyph = subprocess.Popen(["/usr/bin/aspell", "list", "--encoding=utf-8", "--lang=fr"],
+                                                 stdin=subprocess.PIPE, stdout=subprocess.PIPE
+                                                 ).communicate(hyphenated)[0]
+        fr_errors_hyph = set(unicode(aspell_output_fr_hyph, "utf-8").splitlines())
+        fr_errors |= fr_errors_hyph
+    return (en_errors & fr_errors)  - goodwords
 
 
 def tokenise(text):
@@ -119,6 +136,7 @@ def build_text(tokens):
 
 if len(sys.argv) == 2 and sys.argv[1] == "test":
     text=u"""\
+habituée zbreakfast-room
 this is an error . here
 this is not a $5,000.00 error
 [**Note2]
