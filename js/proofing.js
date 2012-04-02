@@ -233,6 +233,18 @@ function proofreader() {
     }
 
 
+    function add_blank_line() {
+      var text = text_history[text_history.length - 1];
+      if(text.length == 0) {
+        change_text("\n");
+        return;
+      }
+      var pos = lines[current_line];
+      text = text.slice(0, pos) + "\n" + text.slice(pos);
+      change_text(text);
+    }
+
+
     function get_text() {return text_history[text_history.length - 1];}
     function is_dirty() {return text_dirty;}
     function set_clean(){text_dirty = false; $('#status').removeClass("warn").text("Saved");}
@@ -266,7 +278,8 @@ function proofreader() {
       change_text: change_text,
       get_text: get_text,
       is_dirty: is_dirty,
-      set_clean: set_clean
+      set_clean: set_clean,
+      add_blank_line: add_blank_line
     };
   }
   var text_container = text_container_func();
@@ -413,7 +426,7 @@ function proofreader() {
     }
 
     function default_keydown_handler(event) {
-      // console.log("event.which: " + event.which + ", event.keyCode: " + event.keyCode + ", event.shiftKey: " + event.shiftKey);
+      console.log("event.which: " + event.which + ", event.keyCode: " + event.keyCode + ", event.shiftKey: " + event.shiftKey);
       if(event.which == 74 || event.which == 40) { //j or down arrow
         image_container.next();
         if(!event.shiftKey)
@@ -439,9 +452,13 @@ function proofreader() {
       else if(event.which == 72 || event.which == 36) { //h or home
         text_container.select(0);
         image_container.select(0);
-        event.preventDefault(); 
+        event.preventDefault();
         event.stopPropagation();//prevent home button scrolling focused pane
         }
+      else if(event.which == 13) {//Enter - add a blank line
+        text_container.add_blank_line();
+        event.preventDefault();
+      }
     }
 
     function editor_keydown_handler(event) {
