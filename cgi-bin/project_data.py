@@ -159,7 +159,7 @@ class ProjectData:
         self.set_data(pageid, "lines", lines, status)
 
 
-    def set_text(self, pageid, text, user=None):
+    def set_text(self, pageid, text, user=None, done=True):
         """Saves the text TEXT to a file and adds the filename to the project file. TEXT must
         be a simple stream of bytes, i.e. UTF-8 text should already be encoded."""
         if not self.exists(pageid): raise DataException
@@ -168,7 +168,7 @@ class ProjectData:
         if not os.path.exists(target_file):
             open(target_file, "w").write(text)
             os.chmod(target_file, 0640)
-        status = STATUS_DONE
+        status = STATUS_DONE if done else STATUS_NEW
         if user == None: user = "ocr"
         else: status |= STATUS_USER
         self.set_data(pageid, user, os.path.basename(target_file), status)
