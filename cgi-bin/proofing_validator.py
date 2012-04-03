@@ -10,7 +10,7 @@ import re
 TYPE_UNKNOWN, TYPE_WORD, TYPE_DIGIT, TYPE_SPACE, TYPE_PUNC, TYPE_NOTE = range(6)
 # descriptors = ["Unknown", "Word", "Digit", "Whitespace", "Punctuation", "Note"]
 
-stealth_scannos = set(["he", "be"])
+stealth_scannos = set(["he", "be", "de", "do"])
 
 def aspell_text(text, goodwords):
     goodwords = set(unicode(goodwords, "utf-8").split(";"))
