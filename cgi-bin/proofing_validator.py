@@ -25,13 +25,13 @@ def aspell_text(text, goodwords):
     #french reports error in hyphenated word as whole hyphenated word e.g. zbreakfast-room. Since we
     #tokenise "-" as punctuation, we need to find out if either side is a spelling error. English seems
     #to do this already.
-    hyphenated = ""
+    hyphenated = u""
     for e in fr_errors:
         if "-" in e: hyphenated += e.replace("-", " ") + " "
     if hyphenated:
         aspell_output_fr_hyph = subprocess.Popen(["/usr/bin/aspell", "list", "--encoding=utf-8", "--lang=fr"],
                                                  stdin=subprocess.PIPE, stdout=subprocess.PIPE
-                                                 ).communicate(hyphenated)[0]
+                                                 ).communicate(hyphenated.encode("utf-8"))[0]
         fr_errors_hyph = set(unicode(aspell_output_fr_hyph, "utf-8").splitlines())
         fr_errors |= fr_errors_hyph
     return (en_errors & fr_errors)  - goodwords
