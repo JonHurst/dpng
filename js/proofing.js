@@ -171,8 +171,13 @@ function proofreader() {
          }
       $('#text_container').css('display', 'none');
       if(element) {
-        while((element = element.previousSibling)) {
-          caret_pos += $(element).text().length;
+        if(element=="eol") {
+          caret_pos += $('div.current_line').text().length;
+        }
+        else {
+          while((element = element.previousSibling)) {
+            caret_pos += $(element).text().length;
+          }
         }
       }
       editor.activate(text, caret_pos);
@@ -426,7 +431,7 @@ function proofreader() {
     }
 
     function default_keydown_handler(event) {
-      console.log("event.which: " + event.which + ", event.keyCode: " + event.keyCode + ", event.shiftKey: " + event.shiftKey);
+      // console.log("event.which: " + event.which + ", event.keyCode: " + event.keyCode + ", event.shiftKey: " + event.shiftKey);
       if(event.which == 74 || event.which == 40) { //j or down arrow
         image_container.next();
         if(!event.shiftKey)
@@ -458,6 +463,11 @@ function proofreader() {
       else if(event.which == 13) {//Enter - add a blank line
         text_container.add_blank_line();
         event.preventDefault();
+      }
+      else if(event.which == 79) {//o - cursor at end of line
+        text_container.edit("eol");
+        event.preventDefault(); //prevent keystroke reaching editor
+        event.stopPropagation();
       }
     }
 
