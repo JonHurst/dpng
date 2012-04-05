@@ -5,6 +5,7 @@ function proofreader() {
 
   var cgi_path = "../cgi-bin/";
   var projid = $('body').attr('id');//projid id is body tag id for now
+  var page_id = "";
 
   function image_container_func() {
 
@@ -106,16 +107,25 @@ function proofreader() {
     var num_lines = 0;
     var current_line = 0;
     var text_history = [];
-    var text_dirty;
     var lines, all_lines;
     var goodwords;
 
     function init(text, _goodwords) {
       goodwords = _goodwords || "";
       current_line = 0;
-      text_container.change_text(text);
-      text_dirty = false;
-      $('#status').removeClass("warn").text("Unchanged");
+      var localStorageID = projid + "/" + page_id;
+      text_history = [];
+      if(localStorage && localStorage[localStorageID]) {
+        text_history = JSON.parse(localStorage[localStorageID]);
+        if(text != text_history[0])
+          text_history = [];
+        }
+      if(text_history.length) {
+        refresh();
+      }
+      else {
+        text_container.change_text(text);
+      }
     }
 
 
@@ -217,13 +227,25 @@ function proofreader() {
         return; //if there is no change, there is nothing to do
       }
       text_history.push(text);
+      if(localStorage && text_history.length > 1) {
+        var localStorageID = projid + "/" + page_id;
+        localStorage[localStorageID] = JSON.stringify(text_history);
+      }
+      refresh();
+    }
+
+
+    function refresh() {
+      if(text_history.length == 0) return;
+      var text = text_history[text_history.length - 1];
       find_lines(text);
-      if(text_history.length > 1) {
-        text_dirty = true;
+      if(text_history.length == 1) {
+        $('#status').removeClass("warn").text("Unchanged");
+      }
+      else {
         $('#status').addClass("warn").text("Not saved");
       }
       local_validate(text);
-      // console.log(text_history);
       $('#text_container').load(cgi_path + "proofing_validator.py", {"text": text, "goodwords": goodwords}, validator_callback);
     }
 
@@ -251,8 +273,15 @@ function proofreader() {
 
 
     function get_text() {return text_history[text_history.length - 1];}
-    function is_dirty() {return text_dirty;}
-    function set_clean(){text_dirty = false; $('#status').removeClass("warn").text("Saved");}
+    function is_dirty() {return text_history.length > 1;}
+    function set_clean(){
+      text_history = [text_history[text_history.length - 1]];
+      if(localStorage) {
+        var localStorageID = projid + "/" + page_id;
+        localStorage.removeItem(localStorageID);
+      }
+      $('#status').removeClass("warn").text("Saved");
+    }
 
     function click(event) {
       //find clicked line
@@ -273,6 +302,15 @@ function proofreader() {
     }
     $('#text_container').click(click);
 
+
+    function undo() {
+      if(text_history.length > 1) {
+        text_history.pop();
+        refresh();
+      }
+    }
+
+
     return {
       init: init,
       select: select,
@@ -280,6 +318,7 @@ function proofreader() {
       next: next,
       prev: prev,
       edit: edit,
+      undo: undo,
       change_text: change_text,
       get_text: get_text,
       is_dirty: is_dirty,
@@ -348,7 +387,6 @@ function proofreader() {
 
   function command_func() {
     var control_data;
-    var page_id = "";
 
     function page_callback(ob, status) {
       //initialise controls
@@ -469,6 +507,9 @@ function proofreader() {
         event.preventDefault(); //prevent keystroke reaching editor
         event.stopPropagation();
       }
+      else if(event.which == 90) {//z - undo 1 edit
+        text_container.undo();
+        }
     }
 
     function editor_keydown_handler(event) {
@@ -583,7 +624,6 @@ function proofreader() {
     $('#control_container').resizable({stop: on_control_resize_stop});
 
     $('#menu_bar a').click(function(event) {
-                             console.log($(this).attr('href'));
                              window.open($(this).attr('href'));
                              event.preventDefault();
                              });
