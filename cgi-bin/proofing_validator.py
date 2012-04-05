@@ -40,7 +40,7 @@ def aspell_text(text, goodwords):
 def tokenise(text):
     tokens = []
     regexp_notes = re.compile(r"(\[\*\*[^\]]*\])", re.UNICODE)
-    regexp_words = re.compile(r"([\w]+)", re.UNICODE)
+    regexp_words = re.compile(r"([^\W_]+)", re.UNICODE)
     regexp_digits = re.compile(r"([\d]+)", re.UNICODE)
     regexp_whitespace = re.compile(r"([\s]+)", re.UNICODE)
 
@@ -137,7 +137,7 @@ def build_text(tokens):
 if len(sys.argv) == 2 and sys.argv[1] == "test":
     text=u"""\
 habituée zbreakfast-room
-this is an error . here
+this_is an error . here
 this is not a $5,000.00 error
 [**Note2]
 
