@@ -164,10 +164,10 @@ textarea
 
 span.error
 {
-    border-bottom: solid red 2px;
+    border-bottom: solid red 2px !important;
 }
 
-span.spell
+span.spell, span.warn
 {
     border-bottom: solid orange 2px;
 }

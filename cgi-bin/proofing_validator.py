@@ -94,16 +94,27 @@ def calculate_classes(tokens, spelling_errors, stealth_scannos):
     for c, t in enumerate(tokens):
         if t[1] == TYPE_PUNC:
             tokens[c].append("punc")
+            end_char = tokens[c][0][-1]
             #hyphen at end of line
             if (#(t[0].endswith("-") and tokens[c+1][0] == "\n") or
                 #punctuation with space both sides that is not a 3 dot  ellipsis
                 (tokens[c][0] != "..." and tokens[c-1][1] == TYPE_SPACE and tokens[c+1][1] == TYPE_SPACE) or
                 #end of word punctuation without a following space
-                (tokens[c][0][-1] in ":;!?" and tokens[c + 1][1] != TYPE_SPACE) or
+                (end_char in ":;!?" and tokens[c + 1][1] != TYPE_SPACE) or
                 # . and , that are not followed by a space and are not single and followed by a number
-                (tokens[c][0][-1] in ".," and tokens[c + 1][1] != TYPE_SPACE and not
-                 (len(tokens[c][0]) == 1 and tokens[c + 1][1] == TYPE_DIGIT))):
+                (end_char in ".," and tokens[c + 1][1] != TYPE_SPACE and not
+                 (len(tokens[c][0]) == 1 and tokens[c + 1][1] == TYPE_DIGIT)) or
+                # , at end of paragraph
+                (end_char == "," and tokens[c + 1][0] == "\n\n")):
                 tokens[c].append("error")
+            #warn of full stop followed by whitespace then lower case letter or comma followed whitespace
+            #then an upper case letter
+            if (end_char in ".," and c < len(tokens) - 2 and
+                tokens[c + 1][1] == TYPE_SPACE and tokens[c + 2][1] == TYPE_WORD):
+                ch = tokens[c + 2][0][0]
+                if ((end_char == "." and ch.islower()) or
+                    (end_char == "," and ch.isupper() and tokens[c + 2][0] != "I")):
+                        tokens[c].append("warn")
         elif t[1] == TYPE_WORD:
             if t[0] in spelling_errors:
                 tokens[c].append("spell")
@@ -137,13 +148,13 @@ def build_text(tokens):
 if len(sys.argv) == 2 and sys.argv[1] == "test":
     text=u"""\
 habituée zbreakfast-room
-this_is an error . here
+this_#is an error . here
 this is not a $5,000.00 error
 [**Note2]
 
 INTRODUCTION [**Note]
 
-caféq The fol1owing narrative falls naturally into three
+caféq, The fol1owing. narrative falls naturally into three
 divisions, corresponding to distinct and clearly
 marked periods of Sophy's life. Of the first and
 second-her childhood at Morpingham and her so-
