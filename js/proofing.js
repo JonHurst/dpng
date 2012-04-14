@@ -406,6 +406,7 @@ function proofreader() {
 
 
     function submit(proj_id) {
+      if(!page_id) return;
       jQuery.post(cgi_path + "command.py",
                   {verb:"save", projid: proj_id, pageid: page_id, text:text_container.get_text()},
                   submit_callback);
