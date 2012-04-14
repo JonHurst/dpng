@@ -20,6 +20,7 @@ body
     border-radius: 5px;
     clear:both;
     border: 2px solid black;
+    z-index: 0;
 }
 
 #image_container, #text_container, #editor
@@ -174,15 +175,19 @@ span.spell, span.warn
 
 span.punc
 {
-    background-color: #E0FFE0;
+    background-color: #A8FFA8;
     font-weight:bold;
 }
 
-span.stealth, span.digit
+span.stealth
 {
     border-bottom: solid green 2px;
 }
 
+span.digit
+{
+    background-color: #82B4FF;
+}
 #menu_bar
 {
     color:white;
@@ -337,4 +342,9 @@ div.current_line span
 #status.warn
 {
     background-color: red;
+}
+
+#cancel
+{
+    margin-right: 1em;
 }
