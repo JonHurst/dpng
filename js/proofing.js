@@ -4,7 +4,22 @@ jQuery.ajaxSetup({'cache': false});
 function proofreader() {
 
   var cgi_path = "../cgi-bin/";
-  var projid = $('body').attr('id');//projid id is body tag id for now
+  var url_param_strings = location.search.substring(1).split("&");
+  console.log(url_param_strings);
+  var projid = "";
+  var task = "proof";
+  for(var c = 0; c < url_param_strings.length; c++) {
+    var pos = url_param_strings[c].indexOf("=");
+    if(pos == -1) continue;
+    var name = url_param_strings[c].substring(0, pos);
+    if(name == "projid")  {
+      projid = decodeURIComponent(url_param_strings[c].substring(pos + 1));
+    }
+    else if(name == "task") {
+      task = decodeURIComponent(url_param_strings[c].substring(pos + 1));
+    }
+  }
+  console.log("Projid: " + projid + " Task: " + task);
   var page_id = "";
 
   function image_container_func() {

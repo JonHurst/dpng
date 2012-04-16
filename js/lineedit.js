@@ -3,7 +3,20 @@ jQuery(
     jQuery.ajaxSetup({'cache': false});
 
     var cgi_path = "../cgi-bin/";
-    var projid = $('body').attr('id');//projid id is body tag id for now
+    var url_param_strings = location.search.substring(1).split("&");
+    var projid = "";
+    var task = "features";
+    for(var c = 0; c < url_param_strings.length; c++) {
+      var pos = url_param_strings[c].indexOf("=");
+      if(pos == -1) continue;
+      var name = url_param_strings[c].substring(0, pos);
+      if(name == "projid")  {
+        projid = decodeURIComponent(url_param_strings[c].substring(pos + 1));
+      }
+      else if(name == "task") {
+        task = decodeURIComponent(url_param_strings[c].substring(pos + 1));
+      }
+    }
     var pageid;
     var image;
     var lines;
@@ -100,7 +113,7 @@ jQuery(
         {verb:"list", projid: projid, user: "lines"});
     }
 
-    
+
     //load the pagepicker to start things off
     $('#pagepicker_tables').load(cgi_path + "command.py",
                                  {verb:"list", projid: projid, user: "lines"});
