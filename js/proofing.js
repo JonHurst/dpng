@@ -5,7 +5,6 @@ function proofreader() {
 
   var cgi_path = "../cgi-bin/";
   var url_param_strings = location.search.substring(1).split("&");
-  console.log(url_param_strings);
   var projid = "";
   var task = "proof";
   for(var c = 0; c < url_param_strings.length; c++) {
@@ -19,7 +18,6 @@ function proofreader() {
       task = decodeURIComponent(url_param_strings[c].substring(pos + 1));
     }
   }
-  console.log("Projid: " + projid + " Task: " + task);
   var page_id = "";
 
   function image_container_func() {
