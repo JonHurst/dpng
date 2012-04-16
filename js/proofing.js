@@ -414,14 +414,14 @@ function proofreader() {
 
 
     function get_page(proj_id, page_id) {
-      jQuery.getJSON(cgi_path + "command.py", { verb:"get", projid: proj_id, pageid: page_id}, page_callback);
+      jQuery.getJSON(cgi_path + "command.py", { verb:"get", task: task, projid: proj_id, pageid: page_id}, page_callback);
     }
 
 
     function submit(proj_id) {
       if(!page_id) return;
       jQuery.post(cgi_path + "command.py",
-                  {verb:"save", projid: proj_id, pageid: page_id, text:text_container.get_text()},
+                  {verb:"save", task:task, projid: proj_id, pageid: page_id, text:text_container.get_text()},
                   submit_callback);
     }
 
@@ -447,12 +447,12 @@ function proofreader() {
 
     function reserve(proj_id) {
       jQuery.post(cgi_path + "command.py",
-                  {verb:"reserve", projid: proj_id}, reserve_callback);
+                  {verb:"reserve", task:task, projid: proj_id}, reserve_callback);
     }
 
 
     function reserve_callback(ob, status) {
-      page_picker.show();
+      page_picker.refresh();
     }
 
 
@@ -592,6 +592,12 @@ function proofreader() {
     $('#cancel').click(cancel);
 
 
+    function reserve() {
+      command.reserve(projid);
+    }
+    $('#reserve').click(reserve);
+
+
     function click(event) {
       event.preventDefault();
       var href = $(event.target).attr('href');
@@ -603,19 +609,26 @@ function proofreader() {
     $('#pagepicker').click(click);
 
 
+    function refresh() {
+      $('#pagepicker_tables').load(cgi_path + "command.py",
+                                   {verb:"list", task: task, projid: projid}, list_callback);
+    }
+
+
     function show() {
       $('#modal_greyout').css("display", "block");
       command_bar.enabled(false);
       keyhandler.none();
-      $('#pagepicker_tables').load(cgi_path + "command.py",
-                                   {verb:"list", projid: projid}, list_callback);
+      refresh();
     }
+
 
     function hide() {
       $('#pagepicker').css("display", "none");
       command_bar.enabled(true);
       keyhandler.normal();
     }
+
 
     function list_callback(ob, status) {
       $('#pagepicker').css("display", "block");
@@ -624,7 +637,8 @@ function proofreader() {
 
     return {
       show: show,
-      hide: hide
+      hide: hide,
+      refresh: refresh
       };
     }
     var page_picker = pagepicker_func();
@@ -643,8 +657,8 @@ function proofreader() {
                              });
 
 
-    //Reserve pages and start
-    command.reserve(projid);
+    //Show pagepicker to start
+    page_picker.show();
   };
 
 

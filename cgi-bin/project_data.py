@@ -93,6 +93,13 @@ class ProjectData:
         return False
 
 
+    def is_done(self, pageid, field):
+        """Returns True if the page exists and is STATUS_DONE for field"""
+        if self.exists(pageid, field) and (self.project_data[pageid][field][STATUS] & STATUS_DONE):
+            return True
+        return False
+
+
     def get_data(self, pageid, field):
         if not self.exists(pageid, field): raise DataException
         return self.project_data[pageid][field]
@@ -105,7 +112,13 @@ class ProjectData:
         self.project_data[pageid][field] = [data, status, datetime.datetime.utcnow()]
 
 
-    def get_pages(self, field="ocr"):
+    def rm_data(self, pageid, field):
+        if not self.exists(pageid): raise DataException
+        if self.exists(pageid, field):
+            del self.project_data[pageid][field]
+
+
+    def get_pages(self, field="images"):
         """Returns an alphabetically sorted list of tuples of the following form:
            (pageid, status, timestamp)
         """
@@ -116,10 +129,10 @@ class ProjectData:
                 if self.project_data[X].has_key(field)]
 
 
-    def reserve(self, pageid, user):
+    def reserve(self, pageid, user, source):
         """Adds a field for USER to the page PAGEID"""
         if self.exists(pageid, user): return
-        data = self.get_data(pageid, "ocr")
+        data = self.get_data(pageid, source)
         self.set_data(pageid, user, data[DATA], STATUS_USER)
 
 
@@ -139,18 +152,19 @@ class ProjectData:
         return self.get_data(pageid, "lines")
 
 
-    def get_text(self, pageid, user=None):
+    def get_text(self, pageid, user):
         """Returns an object O for which:
            O[DATA]: filename of text
            O[STATUS]: status_code
            O[TIMESTAMP]: timestamp
            The text will be the last text submitted by the user for that page or,
-           if no text has yet been submitted or the user is None, the OCR text"""
+           the text copied during the reservation process. Returns None if the text
+           does not exist"""
+        text_data = None
         if user and self.exists(pageid, user):
            text_data = self.get_data(pageid, user)
-        else:
-            text_data = self.get_data(pageid, "ocr")
-        text_data[DATA] = open(os.path.join(self.project_dir, text_data[DATA])).read()
+           #replace filename with actual text
+           text_data[DATA] = open(os.path.join(self.project_dir, text_data[DATA])).read()
         return text_data
 
 

@@ -22,13 +22,19 @@ class CommandProcessor:
         projid = form.getfirst("projid")
         if not projid: raise CommandException(CommandException.NOPROJID)
         self.form = form
+        #common fields-- task, user
+        self.task = self.form.getfirst("task")
+        if not self.task or self.task not in ("preproof", "proof", "merge", "lines", "features"):
+            raise CommandException(CommandException.NOTASK)
+        self.user = self.task
+        if self.user in ("proof", "feature"): #proof and feature are multi-user tasks, others are single user
+            self.user += "/" + os.environ["REMOTE_ADDR"]
         self.project_dir = os.path.join(data_path, projid)
         self.project_file = os.path.join(self.project_dir, "project")
         self.func_map = {
             "get": self.get,
             "list": self.list_pages,
             "save": self.save,
-            "lines": self.update_lines,
             "reserve": self.reserve
             }
 
@@ -43,10 +49,8 @@ class CommandProcessor:
 
     def list_pages(self):
         available, done = [], []
-        user = self.form.getfirst("user")
-        if not user: user = os.environ["REMOTE_ADDR"]
-        data = project_data.ProjectData(self.project_file)
-        pages = data.get_pages(user)
+        data = project_data.ProjectData(self.project_file)#read lock
+        pages = data.get_pages(self.user)
         data.unlock()
         for pageid, status, timestamp in pages:
             table = done if status & project_data.STATUS_DONE else available
@@ -59,7 +63,7 @@ class CommandProcessor:
         available = template % ("Available", "".join(available)) if available else ""
         done = template % ("Done", "".join(done)) if done else ""
         print "Content-type: text/html; charset=UTF-8\n"
-        print "<p id='username'>%s</p>" % user
+        print "<p id='username'>%s</p>" % self.user
         print available, done
 
 
@@ -67,9 +71,10 @@ class CommandProcessor:
         pageid = self.form.getfirst("pageid")
         if not pageid: raise CommandException(CommandException.NOPAGEID)
         print "Content-type: application/json; charset=UTF-8\n"
-        data = project_data.ProjectData(self.project_file)
-        text_data = data.get_text(pageid, os.environ["REMOTE_ADDR"])
-        json.dump([pageid, data.get_meta("title"), text_data[project_data.DATA],
+        data = project_data.ProjectData(self.project_file)#read lock
+        text_data = data.get_text(pageid, self.user)
+        text = text_data[project_data.DATA] if text_data else ""
+        json.dump([pageid, data.get_meta("title"), text,
                    [os.path.join(self.project_dir, X) if X else None
                     for X in data.get_images(pageid)[project_data.DATA]],
                    data.get_lines(pageid)[project_data.DATA],
@@ -84,43 +89,50 @@ class CommandProcessor:
         if not text: text = ""
         if len(text) > 10240: raise CommandException(CommandException.TOOLARGETEXT)
         text = self.re_tws.sub(r"\n", text).rstrip() #strip trailing EOL and EOS whitespace
-        data = project_data.ProjectData(self.project_file, True)
-        data.set_text(pageid, text, os.environ["REMOTE_ADDR"])
-        data.save() #also unlocks
+        data = project_data.ProjectData(self.project_file, True)#write lock
+        data.set_text(pageid, text, self.user)
+        data.save() #unlock
         print "Content-type: application/json; charset=UTF-8\n"
         json.dump("OK", sys.stdout)
 
 
-    def update_lines(self):
-        pageid = self.form.getfirst("pageid")
-        if not pageid: raise CommandException(CommandException.NOPAGEID)
-        lines = self.form.getfirst("lines")
-        if not lines:  raise CommandException(CommandException.NOLINES)
-        lines = json.loads(lines)
-        data = project_data.ProjectData(self.project_file, True)
-        data.set_lines(pageid, lines, project_data.STATUS_DONE)
-        data.save() #also unlocks
-        print "Content-type: application/json; charset=UTF-8\n"
-        json.dump("OK", sys.stdout)
+    # def update_lines(self):
+    #     pageid = self.form.getfirst("pageid")
+    #     if not pageid: raise CommandException(CommandException.NOPAGEID)
+    #     lines = self.form.getfirst("lines")
+    #     if not lines:  raise CommandException(CommandException.NOLINES)
+    #     lines = json.loads(lines)
+    #     data = project_data.ProjectData(self.project_file, True)
+    #     data.set_lines(pageid, lines, project_data.STATUS_DONE)
+    #     data.save() #also unlocks
+    #     print "Content-type: application/json; charset=UTF-8\n"
+    #     json.dump("OK", sys.stdout)
 
 
     def reserve(self):
-        #TODO: reserve just reserves all pages to the user for now. Add
-        #routine to identify and reserve a single page later
-        data = project_data.ProjectData(self.project_file, True)
-        for pageid, status, timestamp in data.get_pages():
-            username = os.environ["REMOTE_ADDR"]
-            data.reserve(pageid, username)
-        data.save() #also unlocks
         print "Content-type: application/json; charset=UTF-8\n"
-        json.dump("OK", sys.stdout)
+        retval = "OK"
+        data = project_data.ProjectData(self.project_file, True)#locks
+        if self.task == "preproof":
+            source = "ocr"
+        elif self.task == "proof":
+            source = "preproof"
+        for pageid, status, timestamp in data.get_pages():
+            if not data.exists(pageid, self.user) and data.is_done(pageid, source):
+                #todo: number of proofers check to go here
+                data.reserve(pageid, self.user, source)
+                break
+        else:
+            retval = "FINISHED"
+        data.save() #unlocks
+        json.dump(retval, sys.stdout)
 
 
 
 class CommandException(Exception):
     (UNKNOWN, NOVERB, UNKNOWNVERB, NOPROJID, NOPAGEID,
      TOOLARGETEXT, BADPAGEID, BADPROJECTFILE,
-     NOLINES) = range(9)
+     NOLINES, NOTASK) = range(10)
     def __init__(self, code):
         self.code = code
     def __repr__(self, code):
@@ -133,7 +145,8 @@ class CommandException(Exception):
             "Text too large",
             "Bad page identifier",
             "Project file does not exist",
-            "No lines list sent"
+            "No lines list sent",
+            "No task identifier sent"
             ][code]
 
 ##############################
@@ -145,8 +158,9 @@ class FakeForm:
             "projid": "projid_4f419bd5258cd",
             "verb": "reserve",
             "lines" : [1000, 2000, 3000],
-            "pageid" : "091",
-            "text": "This is a yet another test"
+            "pageid" : "093",
+            "text": "This is a yet another test",
+            "task": "preproof"
             }
         if value in values.keys():
             return values[value]
@@ -158,7 +172,7 @@ class FakeForm:
 def main():
     if  "test" in sys.argv:
         form = FakeForm()
-        os.environ["REMOTE_ADDR"] = "127.0.0.1"
+        os.environ["REMOTE_ADDR"] = "127.0.0.2"
     else:
         cgitb.enable()
         form = cgi.FieldStorage()
