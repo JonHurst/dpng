@@ -29,7 +29,7 @@ jQuery(
       if(href) {
         pageid = href;
         jQuery.getJSON(cgi_path + "command.py",
-                       { verb:"get", projid: projid, pageid: href}, page_callback);
+                       { verb: "get", task: "lines", projid: projid, pageid: href}, page_callback);
       }
     }
 
@@ -102,7 +102,7 @@ jQuery(
         line_positions.push(line);});
       line_positions.sort(function(a, b) {return a - b; });
       var json_lines = JSON.stringify(line_positions);
-      jQuery.post(cgi_path + "command.py", {verb:"lines", lines:json_lines,
+      jQuery.post(cgi_path + "command.py", {verb:"save", task: "lines", lines:json_lines,
                                             projid: projid, pageid: pageid}, submit_callback);
     }
     $('#submit').click(on_submit_click);
@@ -110,12 +110,12 @@ jQuery(
 
     function submit_callback(ob, status) {
       $('#pagepicker_tables').load(cgi_path + "command.py",
-        {verb:"list", projid: projid, user: "lines"});
+      {verb:"list", task: "lines", projid: projid});
     }
 
 
     //load the pagepicker to start things off
     $('#pagepicker_tables').load(cgi_path + "command.py",
-                                 {verb:"list", projid: projid, user: "lines"});
+                                 {verb:"list", task: "lines", projid: projid, user: "lines"});
 
   });

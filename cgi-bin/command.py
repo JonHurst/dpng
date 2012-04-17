@@ -72,8 +72,9 @@ class CommandProcessor:
         if not pageid: raise CommandException(CommandException.NOPAGEID)
         print "Content-type: application/json; charset=UTF-8\n"
         data = project_data.ProjectData(self.project_file)#read lock
-        text_data = data.get_text(pageid, self.user)
-        text = text_data[project_data.DATA] if text_data else ""
+        text = ""
+        if self.task in ("preproof", "proof"):
+            text = data.get_text(pageid, self.user)[project_data.DATA]
         json.dump([pageid, data.get_meta("title"), text,
                    [os.path.join(self.project_dir, X) if X else None
                     for X in data.get_images(pageid)[project_data.DATA]],
@@ -85,28 +86,22 @@ class CommandProcessor:
     def save(self):
         pageid = self.form.getfirst("pageid")
         if not pageid: raise CommandException(CommandException.NOPAGEID)
-        text = self.form.getfirst("text")
-        if not text: text = ""
-        if len(text) > 10240: raise CommandException(CommandException.TOOLARGETEXT)
-        text = self.re_tws.sub(r"\n", text).rstrip() #strip trailing EOL and EOS whitespace
-        data = project_data.ProjectData(self.project_file, True)#write lock
-        data.set_text(pageid, text, self.user)
+        if self.task == "lines":
+            lines = self.form.getfirst("lines")
+            if not lines:  raise CommandException(CommandException.NOLINES)
+            lines = json.loads(lines)
+            data = project_data.ProjectData(self.project_file, True)#write lock
+            data.set_lines(pageid, lines, project_data.STATUS_DONE)
+        else:
+            text = self.form.getfirst("text")
+            if not text: text = ""
+            if len(text) > 10240: raise CommandException(CommandException.TOOLARGETEXT)
+            text = self.re_tws.sub(r"\n", text).rstrip() #strip trailing EOL and EOS whitespace
+            data = project_data.ProjectData(self.project_file, True)#write lock
+            data.set_text(pageid, text, self.user)
         data.save() #unlock
         print "Content-type: application/json; charset=UTF-8\n"
         json.dump("OK", sys.stdout)
-
-
-    # def update_lines(self):
-    #     pageid = self.form.getfirst("pageid")
-    #     if not pageid: raise CommandException(CommandException.NOPAGEID)
-    #     lines = self.form.getfirst("lines")
-    #     if not lines:  raise CommandException(CommandException.NOLINES)
-    #     lines = json.loads(lines)
-    #     data = project_data.ProjectData(self.project_file, True)
-    #     data.set_lines(pageid, lines, project_data.STATUS_DONE)
-    #     data.save() #also unlocks
-    #     print "Content-type: application/json; charset=UTF-8\n"
-    #     json.dump("OK", sys.stdout)
 
 
     def reserve(self):
@@ -157,11 +152,11 @@ class FakeForm:
     def getfirst(self, value):
         values = {
             "projid": "projid_4f419bd5258cd",
-            "verb": "reserve",
+            "verb": "get",
             "lines" : [1000, 2000, 3000],
             "pageid" : "093",
             "text": "This is a yet another test",
-            "task": "proof"
+            "task": "lines"
             }
         if value in values.keys():
             return values[value]
