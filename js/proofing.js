@@ -119,6 +119,7 @@ function proofreader() {
 
     var num_lines = 0;
     var current_line = 0;
+    var current_token = -1;
     var text_history = [];
     var lines, all_lines;
     var goodwords;
@@ -146,8 +147,13 @@ function proofreader() {
       var num = line != undefined ? line : current_line;
       if(num < 0) num = 0; else if(num >= num_lines) num = num_lines - 1;
       var offset = line - current_line;
+      //remove 'current' class from span and line whenever line is changed
+      if(num != current_line) {
+        current_token = -1;
+        $('div.current_line span').removeClass("current");
+        $("div.current_line").removeClass("current_line");
+      }
       current_line = num;
-      $("div.current_line").removeClass("current_line");
       var current_line_div = $("div.line").eq(num);
       if(current_line_div.length) {
         current_line_div.addClass("current_line");
@@ -156,6 +162,38 @@ function proofreader() {
         $('#text_container').scrollTop(scroll_top);
       }
       return offset;
+    }
+
+
+    function next_token() {
+      var token_count = $('div.current_line span').length;
+      if(current_line == num_lines - 1 && current_token == token_count - 1)
+        return;//We're on the last token of the page, so do nothing
+      $('div.current_line span').removeClass("current");
+      current_token++;
+      if(current_token == token_count) {
+        next();
+        image_container.next();
+        current_token = 0;
+      }
+      $('div.current_line span').eq(current_token).addClass("current");
+    }
+
+
+    function prev_token() {
+      if(current_line == 0 && current_token == 0)
+        return;//We're on the first token of the page, so do nothing
+      $('div.current_line span').removeClass("current");
+      var token_count = $('div.current_line span').length;
+      if(current_token == -1)
+        current_token = token_count;
+      current_token--;
+      if(current_token < 0) {
+        prev();
+        image_container.prev();
+        current_token =  $('div.current_line span').length - 1;
+      }
+      $('div.current_line span').eq(current_token).addClass("current");
     }
 
 
@@ -183,7 +221,9 @@ function proofreader() {
     function prev() {move(-1);}
 
 
-    function edit(element) {
+    function edit(pos, element) {
+      if(element == undefined && current_token != -1)
+        element = $('div.current_line span').get(current_token);
       var text = text_history[text_history.length -1];
       var caret_pos = lines[current_line];
       //I feel so dirty... have to browser sniff for Opera because it includes newline
@@ -193,14 +233,13 @@ function proofreader() {
         caret_pos += current_line;
          }
       $('#text_container').css('display', 'none');
-      if(element) {
-        if(element=="eol") {
-          caret_pos += $('div.current_line').text().length;
-        }
-        else {
-          while((element = element.previousSibling)) {
-            caret_pos += $(element).text().length;
-          }
+      if(element == undefined) {
+        caret_pos += Math.round($('div.current_line').text().length * pos);
+      }
+      else {
+        caret_pos += Math.round($(element).text().length * pos);
+        while((element = element.previousSibling)) {
+          caret_pos += $(element).text().length;
         }
       }
       editor.activate(text, caret_pos);
@@ -306,8 +345,10 @@ function proofreader() {
         if($(div).hasClass("line")) line++;
       }
       event.target = event.target || event.srcElement;
-      if(line == current_line && event.target.nodeName == "SPAN")
-        edit(event.target);
+      if(line == current_line && event.target.nodeName == "SPAN") {
+        var pos = (event.clientX - $(event.target).offset().left) / $(event.target).outerWidth();
+        edit(pos, event.target);
+      }
       else {
         var offset = select(line);
         image_container.move(offset);
@@ -336,7 +377,9 @@ function proofreader() {
       get_text: get_text,
       is_dirty: is_dirty,
       set_clean: set_clean,
-      add_blank_line: add_blank_line
+      add_blank_line: add_blank_line,
+      next_token: next_token,
+      prev_token: prev_token
     };
   }
   var text_container = text_container_func();
@@ -508,11 +551,21 @@ function proofreader() {
         event.stopPropagation();//prevent down arrow scrolling focused pane
       }
       else if(event.which == 69 || event.which == 73) { //e or i = start editor
-        text_container.edit();
+        text_container.edit(0);
         event.preventDefault(); //prevent keystroke reaching editor
         event.stopPropagation();
       }
-      else if(event.which == 72 || event.which == 36) { //h or home
+      else if(event.which == 76 || event.which == 32 || event.which == 39) {//l or space bar or right arrow
+        text_container.next_token();
+        event.preventDefault();
+        event.stopPropagation();//prevent space bar and right arrow scrolling focused pane
+      }
+      else if(event.which == 72 || event.which == 37) {//h or left arrow
+        text_container.prev_token();
+        event.preventDefault();
+        event.stopPropagation();//prevent left arrow scrolling focused pane
+      }
+      else if(event.which == 85  || event.which == 36) { //u or home
         text_container.select(0);
         image_container.select(0);
         event.preventDefault();
@@ -523,7 +576,7 @@ function proofreader() {
         event.preventDefault();
       }
       else if(event.which == 79) {//o - cursor at end of line
-        text_container.edit("eol");
+        text_container.edit(1);
         event.preventDefault(); //prevent keystroke reaching editor
         event.stopPropagation();
       }

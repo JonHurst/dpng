@@ -348,3 +348,8 @@ div.current_line span
 {
     margin-right: 1em;
 }
+
+span.current
+{
+    color: #D00000;
+}
