@@ -82,7 +82,7 @@ class ProjectData:
         timestamp = datetime.datetime.utcnow()
         self.project_data[pageid] = {"images": [images, STATUS_NEW, timestamp],
                                      "lines": [None, STATUS_NEW, timestamp]}
-        self.set_text(pageid, text)
+        self.set_text(pageid, text, "ocr")
 
 
     def exists(self, pageid, field=None):
@@ -191,6 +191,16 @@ class ProjectData:
         #references..
 
 
+    def quality(self, pageid, prefix):
+        """Returns a tuple of two numbers of the form (ACTUAL_QUALITY, PROJECTED_QUALITY) for PAGEID based on
+        blocks with keys starting with PREFIX"""
+        if not self.exists(pageid): raise DataException
+        page = self.project_data[pageid]
+        all_fields = [X for X in page.keys() if X.startswith(prefix)]
+        done_fields = [X for X in all_fields if page[X][STATUS] & STATUS_DONE]
+        return (len(done_fields), len(all_fields))
+
+
     def dump(self, only_done=False):
         print self.meta
         print "\nPages:\n"
@@ -199,6 +209,7 @@ class ProjectData:
             for l in sorted(self.project_data[k].keys()):
                 if only_done and not self.project_data[k][l][STATUS] & STATUS_DONE: continue
                 print "  ", l, ":", self.project_data[k][l]
+            print "Proof quality", self.quality(k, "proof/")
             print
 
 

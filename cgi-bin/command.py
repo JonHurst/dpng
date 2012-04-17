@@ -118,12 +118,13 @@ class CommandProcessor:
         elif self.task == "proof":
             source = "preproof"
         for pageid, status, timestamp in data.get_pages():
-            if not data.exists(pageid, self.user) and data.is_done(pageid, source):
-                #todo: number of proofers check to go here
+            if (not data.exists(pageid, self.user) and
+                data.is_done(pageid, source) and
+                data.quality(pageid, "proof/")[1] < 3):#TODO Hard-coded value of 3 for now
                 data.reserve(pageid, self.user, source)
                 break
         else:
-            retval = "FINISHED"
+            retval = "NONE_AVAILABLE"
         data.save() #unlocks
         json.dump(retval, sys.stdout)
 
@@ -160,7 +161,7 @@ class FakeForm:
             "lines" : [1000, 2000, 3000],
             "pageid" : "093",
             "text": "This is a yet another test",
-            "task": "preproof"
+            "task": "proof"
             }
         if value in values.keys():
             return values[value]
