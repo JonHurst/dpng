@@ -453,6 +453,12 @@ function proofreader() {
 
     function reserve_callback(ob, status) {
       page_picker.refresh();
+      if(ob == "NONE_AVAILABLE") {
+        alert("Task \"" + task + "\" has no further pages available to reserve at this time. Please try later.");
+      }
+      else if(ob == "COMPLETE") {
+        alert("Task \"" + task + "\" is complete.");
+      }
     }
 
 

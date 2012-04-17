@@ -109,17 +109,27 @@ class CommandProcessor:
         retval = "OK"
         data = project_data.ProjectData(self.project_file, True)#locks
         if self.task == "preproof":
-            source = "ocr"
+            for pageid, status, timestamp in data.get_pages():
+                if (not data.exists(pageid, self.user) and
+                    data.is_done(pageid, "ocr")):
+                    data.reserve(pageid, self.user, "ocr")
+                    break
+            else:
+                retval = "COMPLETE"
         elif self.task == "proof":
-            source = "preproof"
-        for pageid, status, timestamp in data.get_pages():
-            if (not data.exists(pageid, self.user) and
-                data.is_done(pageid, source) and
-                data.quality(pageid, "proof/")[1] < 3):#TODO Hard-coded value of 3 for now
-                data.reserve(pageid, self.user, source)
-                break
-        else:
-            retval = "NONE_AVAILABLE"
+            for pageid, status, timestamp in data.get_pages():
+                if (not data.exists(pageid, self.user) and
+                    data.is_done(pageid, "preproof") and
+                    data.quality(pageid, "proof/")[1] < 3):
+                    data.reserve(pageid, self.user, "preproof")
+                    break
+            else:
+                for pageid, status, timestamp in data.get_pages():
+                    if data.quality(pageid, "proof/")[0] < 3:
+                        retval = "NONE_AVAILABLE"
+                        break
+                else:
+                    retval = "COMPLETE"
         data.save() #unlocks
         json.dump(retval, sys.stdout)
 
@@ -152,11 +162,11 @@ class FakeForm:
     def getfirst(self, value):
         values = {
             "projid": "projid_4f419bd5258cd",
-            "verb": "get",
+            "verb": "reserve",
             "lines" : [1000, 2000, 3000],
             "pageid" : "093",
             "text": "This is a yet another test",
-            "task": "lines"
+            "task": "proof"
             }
         if value in values.keys():
             return values[value]
@@ -168,7 +178,7 @@ class FakeForm:
 def main():
     if  "test" in sys.argv:
         form = FakeForm()
-        os.environ["REMOTE_ADDR"] = "127.0.0.2"
+        os.environ["REMOTE_ADDR"] = "127.0.0.3"
     else:
         cgitb.enable()
         form = cgi.FieldStorage()
