@@ -123,6 +123,7 @@ function proofreader() {
     var text_history = [];
     var lines, all_lines;
     var goodwords;
+    var validation_sn = 0;
 
     function init(text, _goodwords) {
       goodwords = _goodwords || "";
@@ -298,11 +299,17 @@ function proofreader() {
         $('#status').addClass("warn").text("Not saved");
       }
       local_validate(text);
-      $('#text_container').load(cgi_path + "proofing_validator.py", {"text": text, "goodwords": goodwords}, validator_callback);
+      jQuery.get(cgi_path + "proofing_validator.py",
+                 {text: text, serial: ++validation_sn, goodwords: goodwords},
+        validator_callback, "html");
     }
 
 
     function validator_callback(response_text, text_status) {
+      var current_sn = "<!--" + validation_sn + "-->";
+      if(response_text.slice(0, current_sn.length) != current_sn)
+        return;//out of sequence validation detected -- don't process it
+      $('#text').replaceWith(response_text);
       num_lines = $('#text div.line').length;
       $('span.note').replaceWith(
         function() {

@@ -142,7 +142,7 @@ def build_text(tokens):
             output += "<div class='line'>" + line + "</div>\n"
         else:
             output += "<div class='blank'></div>\n"
-    return "<div id='text'>\n" + output + "</div>"
+    return "<!--%s--><div id='text'>\n%s</div>" % (serial, output)
 
 
 if len(sys.argv) == 2 and sys.argv[1] == "test":
@@ -183,6 +183,7 @@ few exceptions, perished. Miss Robins accounts for
 this-and in view of her careful preservation of
 later correspondence, her apology must be accept-"""
     goodwords = ""
+    serial = "1234"
 else:
     # cgitb.enable()
     form = cgi.FieldStorage()
@@ -191,6 +192,7 @@ else:
         text = u""
     else:
         text = unicode(form['text'].value, "utf-8")
+    serial = form.getfirst("serial", "0000")
 print "Content-type: text/html; charset=UTF-8\n"
 spelling_errors = aspell_text(text, goodwords)
 tokens = apply_language_specials(tokenise(text))
