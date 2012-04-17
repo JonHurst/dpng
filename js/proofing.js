@@ -128,6 +128,7 @@ function proofreader() {
     function init(text, _goodwords) {
       goodwords = _goodwords || "";
       current_line = 0;
+      current_token = -1;
       var localStorageID = projid + "/" + page_id;
       text_history = [];
       if(localStorage && localStorage[localStorageID]) {
@@ -158,6 +159,9 @@ function proofreader() {
       var current_line_div = $("div.line").eq(num);
       if(current_line_div.length) {
         current_line_div.addClass("current_line");
+        if(current_token != -1) {
+          $('div.current_line span').eq(current_token).addClass("current");
+        }
         var scroll_top = current_line_div.position().top +
           (current_line_div.height() -  $('#text_container').height()) / 2;
         $('#text_container').scrollTop(scroll_top);
