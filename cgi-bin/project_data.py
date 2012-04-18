@@ -18,6 +18,7 @@ import pickle
 import hashlib
 import datetime
 import fcntl
+import random
 
 
 DATA, STATUS, TIMESTAMP = range(3)
@@ -177,10 +178,12 @@ class ProjectData:
         """Saves the text TEXT to a file and adds the filename to the project file. TEXT must
         be a simple stream of bytes, i.e. UTF-8 text should already be encoded."""
         if not self.exists(pageid): raise DataException
-        h  = hashlib.sha1(text).hexdigest()
+        h = hashlib.sha1(text).hexdigest()
         target_file = os.path.join(self.project_dir, h)
         if not os.path.exists(target_file):
-            open(target_file, "w").write(text)
+            temp_target = target_file + str(random.getrandbits(16))
+            open(temp_target, "w").write(text)
+            os.rename(temp_target, target_file)#rename is a POSIX atomic operation
             os.chmod(target_file, 0640)
         status = STATUS_DONE if done else STATUS_NEW
         if user == None: user = "ocr"
