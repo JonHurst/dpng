@@ -729,6 +729,10 @@ function proofreader() {
       }
       $('#' + list_type).replaceWith($("<div id='" + list_type + "'/>").append(content));
       $('#pagepicker').css("display", "block");
+      if($('#res table').length)
+        $('#res a').eq(0).focus();
+      else
+        $('#reserve').focus();
     }
 
 
