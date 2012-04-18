@@ -371,6 +371,10 @@ function proofreader() {
     function undo() {
       if(text_history.length > 1) {
         text_history.pop();
+        if(text_history.length == 1) {
+          var localStorageID = projid + "/" + page_id;
+          localStorage.removeItem(localStorageID);
+        }
         refresh();
       }
     }
