@@ -119,7 +119,7 @@ body
 .line
 {
     white-space:pre;
-    font-family: "Droid Sans Mono", monospace, sans;
+    font-family: 'PT Mono', monospace, sans;
     font-size: 14pt;
     background-color: white;
     color: black;
@@ -151,7 +151,7 @@ textarea
     height: 100%;
     font-size: 14pt;
     line-height: 1.5;
-    font-family: "Droid Sans Mono", monospace, sans;
+    font-family: 'PT Mono', monospace, sans;
     border: none;
     resize: none;
     background-color: #FFFFA0;
@@ -176,7 +176,6 @@ span.spell, span.warn
 span.punc
 {
     background-color: #A8FFA8;
-    font-weight:bold;
 }
 
 span.stealth
