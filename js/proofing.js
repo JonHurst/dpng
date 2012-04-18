@@ -594,6 +594,12 @@ function proofreader() {
       else if(event.which == 90) {//z - undo 1 edit
         text_container.undo();
         }
+      else if(event.which == 80) {//p - pages
+        command.list(projid);
+      }
+      else if(event.which == 83) {//s - submit
+        command.submit(projid);
+      }
     }
 
     function editor_keydown_handler(event) {
