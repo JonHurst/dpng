@@ -48,23 +48,19 @@ class CommandProcessor:
 
 
     def list_pages(self):
-        available, done = [], []
+        listing = self.form.getfirst("type")
+        if not listing: listing = "res"#default type is reserved
         data = project_data.ProjectData(self.project_file)#read lock
         pages = data.get_pages(self.user)
         data.unlock()
+        page_list = []
         for pageid, status, timestamp in pages:
-            table = done if status & project_data.STATUS_DONE else available
-            table.append(
-                ("<tr>"
-                 "<td><a href='%(pageid)s'>%(pageid)s</a></td>"
-                 "<td>%(timestamp)s</td>"
-                 "</tr>" % {"pageid": pageid, "timestamp": timestamp.strftime("%Y-%m-%d %H:%M")}))
-        template = "<h1>%s</h1><table>%s</table>"
-        available = template % ("Available", "".join(available)) if available else ""
-        done = template % ("Done", "".join(done)) if done else ""
-        print "Content-type: text/html; charset=UTF-8\n"
-        print "<p id='username'>%s</p>" % self.user
-        print available, done
+            if not data.exists(pageid, self.user): continue
+            if ((listing == "done" and (status & project_data.STATUS_DONE)) or
+                (listing == "res" and not (status & project_data.STATUS_DONE))):
+                page_list.append((pageid, timestamp.strftime("%Y-%m-%d %H:%M")))
+        print "Content-type: text/json; charset=UTF-8\n"
+        json.dump((listing, page_list), sys.stdout)
 
 
     def get(self):

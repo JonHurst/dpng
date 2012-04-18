@@ -680,8 +680,10 @@ function proofreader() {
 
 
     function refresh() {
-      $('#pagepicker_tables').load(cgi_path + "command.py",
-                                   {verb:"list", task: task, projid: projid}, list_callback);
+      jQuery.getJSON(cgi_path + "command.py",
+        {verb:"list", task: task, type: "res", projid: projid}, list_callback);
+      jQuery.getJSON(cgi_path + "command.py",
+        {verb:"list", task: task, type: "done", projid: projid}, list_callback);
     }
 
 
@@ -701,6 +703,25 @@ function proofreader() {
 
 
     function list_callback(ob, status) {
+      var list_type = ob[0];
+      var listing = ob[1];
+      var content;
+      if(listing.length == 0) {
+        if(list_type == "res")
+          content = $("<p>Click \"Get Page\" to reserve pages.</p>");
+        else
+          content = $("<p>None</p>");
+      }
+      else {
+        content = ($("<table/>"));
+        for(var c = 0; c < listing.length; c++) {
+          content.append($("<tr><td><a href='" +
+                           listing[c][0] + "'>" +
+                           listing[c][0] + "</a></td><td>" +
+                           listing[c][1] + "</td></tr>"));
+        }
+      }
+      $('#' + list_type).replaceWith($("<div id='" + list_type + "'/>").append(content));
       $('#pagepicker').css("display", "block");
     }
 
