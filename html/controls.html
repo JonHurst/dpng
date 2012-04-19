@@ -3,36 +3,72 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>Proofreader controls</title>
-    <!--link rel="stylesheet" type="text/css" href="styles.css"/-->
     <style type="text/css">
-      body {background-color: #E0E0E0; color:black;}
+      body {background-color: #E0E0E0; color:black; font-size:0.9em;}
+      h1 {margin: 1em 0; font-size: 1.3em;}
+      h2 {font-size: 1.15em;}
       #instructions  {background-color:white; max-width:50em; margin:auto; padding: 1em;}
-      table {margin:auto; border:2px solid black; border-collapse:collapse;}
+      table {margin:1em auto; width:40em; border:2px solid black; border-collapse:collapse;
+      font-size:1em;}
       tr, td, th {border: 1px solid black; padding: 0.25em 1em;}
+      th {width: 10em; color: #00A000;}
       p {padding: 1em;}
       li {padding: 1em;}
     </style>
   </head>
   <body>
       <div id="instructions">
-        <h1>Keyboard</h1>
+        <h1>Motion</h1>
+
         <table>
-          <tr><th>Key</th><th>Action</th></tr>
-          <tr><th>j or down</th><td>Move both highlights down one line.</td></tr>
-          <tr><th>k or up</th><td>Move both highlights up one line.</td></tr>
-          <tr><th>h or home</th><td>Move both highlights to first line.</td></tr>
-          <tr><th>n or shift+j or shift+down</th><td>Move the image highlight down one line.</td></tr>
-          <tr><th>shift+k or shift+up</th><td>Move the image highlight up one line.</td></tr>
-          <tr><th>e or i</th><td>Edit the text.</td></tr>
-          <tr><th>ESC</th><td>Close the editor and re-validate.</td></tr>
+          <tr><th>j</th><td rowspan="2">Move both row highlights down one line.</td></tr>
+          <tr><th>Down Arrow</th></tr>
+          <tr><th>k</th><td rowspan="2">Move both row highlights up one line.</td></tr>
+          <tr><th>Up Arrow</th></tr>
+          <tr><th>u</th><td rowspan="2">Move both row highlights to first line.</td></tr>
+          <tr><th>Home</th></tr>
+          <tr><th>n</th><td rowspan="3">Move the image row highlight down one line.</td></tr>
+          <tr><th>Shift + j</th></tr>
+          <tr><th>Shift + Down Arrow</th></tr>
+          <tr><th>shift+k</th><td rowspan="2">Move the image row highlight up one line.</td></tr>
+          <tr><th>Shift + Up Arrow</th></tr>
+          <tr><th>Spacebar</th><td rowspan="3">Highlight the next token.</td></tr>
+          <tr><th>l</th></tr>
+          <tr><th>Right Arrow</th></tr>
+          <tr><th>h</th><td rowspan="2">Highlight the previous token.</td></tr>
+          <tr><th>Left Arrow</th></tr>
         </table>
 
-        <h1>Mouse</h1>
-        <ul>
-          <li>Clicking in the the text pane moves the highlight in both panes.</li>
-          <li>Clicking in the image pane moves the highlight in that pane only.</li>
-          <li>Clicking on the highlighted line in the text pane opens the editor.</li>
-        </ul>
+        <h1>Editing</h1>
+        <h2>In normal mode</h2>
+        <table>
+          <tr><th>Enter</th><td>Insert a blank line.</td></tr>
+          <tr><th>e</th><td rowspan="2">Change to edit mode. The caret will be at the start of the
+          currently selected line or token.</td></tr>
+          <tr><th>i</th></tr>
+          <tr><th>o</th><td>Change to edit mode. The caret will be at the end of the
+          currently selected line or token.</td></tr>
+          <tr><th>z</th><td>Undo the last edit.</td></tr>
+        </table>
+
+        <h2>In edit mode</h2>
+        <table>
+          <tr><th>ESC</th><td>Return to normal mode.</td></tr>
+        </table>
+
+        <h1>Other</h1>
+        <table>
+          <tr><th>p</th><td>Open the page picker.</td></tr>
+          <tr><th>s</th><td>Submit the page.</td></tr>
+        </table>
+
+        <!-- <h1>Touch (or mouse) — Experimental</h1> -->
+        <!-- <ul> -->
+        <!--   <li>Clicking in the the text pane moves the highlight in both panes.</li> -->
+        <!--   <li>Clicking in the image pane moves the highlight in that pane only.</li> -->
+        <!--   <li>Clicking on a token in the highlighted line in the text pane changes to edit mode, -->
+        <!--   with the caret at the clciked location.</li> -->
+        <!-- </ul> -->
     </div>
 
   </body>
