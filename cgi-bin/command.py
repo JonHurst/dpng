@@ -113,15 +113,17 @@ class CommandProcessor:
             else:
                 retval = "COMPLETE"
         elif self.task == "proof":
+            req_quality = data.get_meta("proof_quality")
+            if not req_quality: req_quality = 3
             for pageid, status, timestamp in data.get_pages():
                 if (not data.exists(pageid, self.user) and
                     data.is_done(pageid, "preproof") and
-                    data.quality(pageid, "proof/")[1] < 3):
+                    data.quality(pageid, "proof/")[1] < req_quality):
                     data.reserve(pageid, self.user, "preproof")
                     break
             else:
                 for pageid, status, timestamp in data.get_pages():
-                    if data.quality(pageid, "proof/")[0] < 3:
+                    if data.quality(pageid, "proof/")[0] < req_quality:
                         retval = "NONE_AVAILABLE"
                         break
                 else:
