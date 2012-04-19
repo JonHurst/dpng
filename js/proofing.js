@@ -13,6 +13,7 @@ function proofreader() {
     var name = url_param_strings[c].substring(0, pos);
     if(name == "projid")  {
       projid = decodeURIComponent(url_param_strings[c].substring(pos + 1));
+      $("#guideline_link").attr("href", projid + ".html");
     }
     else if(name == "task") {
       task = decodeURIComponent(url_param_strings[c].substring(pos + 1));
