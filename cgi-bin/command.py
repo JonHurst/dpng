@@ -28,7 +28,10 @@ class CommandProcessor:
             raise CommandException(CommandException.NOTASK)
         self.user = self.task
         if self.user in ("proof", "feature"): #proof and feature are multi-user tasks, others are single user
-            self.user += "/" + os.environ["REMOTE_ADDR"]
+            if os.environ.has_key("REMOTE_USER"):
+                self.user += "/" + os.environ["REMOTE_USER"]
+            else:
+                self.user += "/" + os.environ["REMOTE_ADDR"]
         self.project_dir = os.path.join(data_path, projid)
         self.project_file = os.path.join(self.project_dir, "project")
         self.func_map = {
