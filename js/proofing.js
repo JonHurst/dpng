@@ -185,6 +185,9 @@ function proofreader() {
       if(current_line_div.length) {
         current_line_div.addClass("current_line");
         if(current_token != -1) {
+          var token_count = current_line_div.children('span').length;
+          if(token_count && current_token >= token_count)
+            current_token = token_count - 1;
           $('div.current_line span').eq(current_token).addClass("current");
         }
         var scroll_top = current_line_div.position().top +
@@ -197,7 +200,7 @@ function proofreader() {
 
     function next_token() {
       var token_count = $('div.current_line span').length;
-      if(current_line == num_lines - 1 && current_token == token_count - 1)
+      if(current_line == num_lines - 1 && current_token >= token_count - 1)
         return;//We're on the last token of the page, so do nothing
       $('div.current_line span').removeClass("current");
       current_token++;
