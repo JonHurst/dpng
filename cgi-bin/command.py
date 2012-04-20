@@ -24,7 +24,7 @@ class CommandProcessor:
         self.form = form
         #common fields-- task, user
         self.task = self.form.getfirst("task")
-        if not self.task or self.task not in ("preproof", "proof", "merge", "lines", "features"):
+        if not self.task or self.task not in ("init", "preproof", "proof", "merge", "lines", "features"):
             raise CommandException(CommandException.NOTASK)
         self.user = self.task
         if self.user in ("proof", "feature"): #proof and feature are multi-user tasks, others are single user
@@ -64,18 +64,32 @@ class CommandProcessor:
 
 
     def get(self):
-        pageid = self.form.getfirst("pageid")
-        if not pageid: raise CommandException(CommandException.NOPAGEID)
         print "Content-type: application/json; charset=UTF-8\n"
         data = project_data.ProjectData(self.project_file)#read lock
-        text = ""
-        if self.task in ("preproof", "proof"):
-            text = data.get_text(pageid, self.user)[project_data.DATA]
-        json.dump([pageid, data.get_meta("title"), text,
-                   [os.path.join(self.project_dir, X) if X else None
-                    for X in data.get_images(pageid)[project_data.DATA]],
-                   data.get_lines(pageid)[project_data.DATA],
-                   data.get_meta("goodwords")], sys.stdout)
+        if self.task == "init":
+            title = data.get_meta("title")
+            if not title: title = ""
+            guideline_link = data.get_meta("guidelines")
+            if not guideline_link: guideline_link = os.path.join(self.project_dir, "guidelines.html")
+            json.dump([title, guideline_link], sys.stdout)
+        elif self.task in ("preproof", "proof"):
+            pageid = self.form.getfirst("pageid")
+            if not pageid: raise CommandException(CommandException.NOPAGEID)
+            text_data = data.get_text(pageid, self.user)
+            text = text_data[project_data.DATA] if text_data else ""
+            images = [os.path.join(self.project_dir, X) if X else None
+                        for X in data.get_images(pageid)[project_data.DATA]]
+            validator = data.get_meta("validator")
+            if not validator: validator = "../cgi-bin/proofing_validator.py"
+            json.dump([pageid, text, images,
+                       data.get_lines(pageid)[project_data.DATA],
+                       data.get_meta("goodwords"),
+                       validator], sys.stdout)
+        elif self.task == "lines":
+            pageid = self.form.getfirst("pageid")
+            if not pageid: raise CommandException(CommandException.NOPAGEID)
+            image = os.path.join(self.project_dir, data.get_images(pageid)[project_data.DATA][1])
+            json.dump([pageid, image, data.get_lines(pageid)[project_data.DATA]], sys.stdout)
         data.unlock()
 
 
@@ -160,11 +174,11 @@ class FakeForm:
     def getfirst(self, value):
         values = {
             "projid": "projid_4f419bd5258cd",
-            "verb": "reserve",
+            "verb": "get",
             "lines" : [1000, 2000, 3000],
-            "pageid" : "093",
+            # "pageid" : "093",
             "text": "This is a yet another test",
-            "task": "proof"
+            "task": "init"
             }
         if value in values.keys():
             return values[value]

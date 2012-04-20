@@ -2,7 +2,7 @@ jQuery(
   function() {
     jQuery.ajaxSetup({'cache': false});
 
-    var cgi_path = "../cgi-bin/";
+    var ajax_interface = "../cgi-bin/command.py";
     var url_param_strings = location.search.substring(1).split("&");
     var projid = "";
     var task = "features";
@@ -28,14 +28,15 @@ jQuery(
       var href = $(event.target).attr('href');
       if(href) {
         pageid = href;
-        jQuery.getJSON(cgi_path + "command.py",
+        jQuery.getJSON(ajax_interface,
                        { verb: "get", task: "lines", projid: projid, pageid: href}, page_callback);
       }
     }
 
     function page_callback(ob, status) {
-      image = ob[3][1];
-      lines = ob[4];
+      if(ob[0] != pageid) return; //out of sync reply
+      image = ob[1];
+      lines = ob[2];
       load_image(image);
     }
 
@@ -109,10 +110,10 @@ jQuery(
 
 
     function submit_callback(ob, status) {
-      jQuery.getJSON(cgi_path + "command.py",
+      jQuery.getJSON(ajax_interface,
       {verb:"list", task: "lines", type: "res", projid: projid},
                      list_callback);
-      jQuery.getJSON(cgi_path + "command.py",
+      jQuery.getJSON(ajax_interface,
       {verb:"list", task: "lines", type: "done", projid: projid},
                      list_callback);
     }

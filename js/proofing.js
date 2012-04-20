@@ -3,23 +3,45 @@ jQuery.ajaxSetup({'cache': false});
 
 function proofreader() {
 
-  var cgi_path = "../cgi-bin/";
-  var url_param_strings = location.search.substring(1).split("&");
+  var ajax_interface = "../cgi-bin/command.py";
   var projid = "";
   var task = "proof";
+  var page_id = "";
+
+  //extract projid and task from URL
+  var url_param_strings = location.search.substring(1).split("&");
   for(var c = 0; c < url_param_strings.length; c++) {
     var pos = url_param_strings[c].indexOf("=");
     if(pos == -1) continue;
     var name = url_param_strings[c].substring(0, pos);
     if(name == "projid")  {
       projid = decodeURIComponent(url_param_strings[c].substring(pos + 1));
-      $("#guideline_link").attr("href", projid + ".html");
     }
     else if(name == "task") {
       task = decodeURIComponent(url_param_strings[c].substring(pos + 1));
     }
   }
-  var page_id = "";
+
+  //insert title and guidelines link
+  function init_callback(ob, status) {
+    $('#title').text(ob[0]);
+    $("#guideline_link").attr("href", ob[1]);
+  }
+  jQuery.getJSON(ajax_interface, { verb:"get", task: "init", projid: projid}, init_callback);
+
+  //use jQuery ui to make control_container resizable
+  function on_control_resize_stop(event, ui) {
+    image_container.select();
+    text_container.select();
+  }
+  $('#control_container').resizable({stop: on_control_resize_stop});
+
+  //open all menu_bar links in new windows
+  $('#menu_bar a').click(function(event) {
+                           window.open($(this).attr('href'));
+                           event.preventDefault();
+                         });
+
 
   function image_container_func() {
 
@@ -125,9 +147,11 @@ function proofreader() {
     var lines, all_lines;
     var goodwords;
     var validation_sn = 0;
+    var validator = "";
 
-    function init(text, _goodwords) {
+    function init(text, _goodwords, _validator) {
       goodwords = _goodwords || "";
+      validator = _validator;
       current_line = 0;
       current_token = -1;
       var localStorageID = projid + "/" + page_id;
@@ -304,7 +328,7 @@ function proofreader() {
         $('#status').addClass("warn").text("Not saved");
       }
       local_validate(text);
-      jQuery.get(cgi_path + "proofing_validator.py",
+      jQuery.get(validator,
                  {text: text, serial: ++validation_sn, goodwords: goodwords},
         validator_callback, "html");
     }
@@ -463,23 +487,23 @@ function proofreader() {
     function page_callback(ob, status) {
       //initialise controls
       control_data = ob;
-      page_id = ob[0];
-      $('#title').text(ob[1]);
+      if(ob[0] != page_id) return; //out of synch callback
       $('#pageid').text(page_id);
-      text_container.init(ob[2], ob[5]);
-      image_container.init(ob[3], ob[4]);
+      text_container.init(ob[1], ob[4], ob[5]);
+      image_container.init(ob[2], ob[3]);
       $('#modal_greyout').css("display", "none");
     }
 
 
-    function get_page(proj_id, page_id) {
-      jQuery.getJSON(cgi_path + "command.py", { verb:"get", task: task, projid: proj_id, pageid: page_id}, page_callback);
+    function get_page(proj_id, _page_id) {
+      page_id = _page_id;
+      jQuery.getJSON(ajax_interface, { verb:"get", task: task, projid: proj_id, pageid: page_id}, page_callback);
     }
 
 
     function submit(proj_id) {
       if(!page_id) return;
-      jQuery.post(cgi_path + "command.py",
+      jQuery.post(ajax_interface,
                   {verb:"save", task:task, projid: proj_id, pageid: page_id, text:text_container.get_text()},
                   submit_callback);
     }
@@ -505,7 +529,7 @@ function proofreader() {
 
 
     function reserve(proj_id) {
-      jQuery.post(cgi_path + "command.py",
+      jQuery.post(ajax_interface,
                   {verb:"reserve", task:task, projid: proj_id}, reserve_callback);
     }
 
@@ -691,9 +715,9 @@ function proofreader() {
 
 
     function refresh() {
-      jQuery.getJSON(cgi_path + "command.py",
+      jQuery.getJSON(ajax_interface,
         {verb:"list", task: task, type: "res", projid: projid}, list_callback);
-      jQuery.getJSON(cgi_path + "command.py",
+      jQuery.getJSON(ajax_interface,
         {verb:"list", task: task, type: "done", projid: projid}, list_callback);
     }
 
@@ -748,20 +772,6 @@ function proofreader() {
       };
     }
     var page_picker = pagepicker_func();
-
-
-    //use jQuery ui to make control_container resizable
-    function on_control_resize_stop(event, ui) {
-      image_container.select();
-      text_container.select();
-    }
-    $('#control_container').resizable({stop: on_control_resize_stop});
-
-    $('#menu_bar a').click(function(event) {
-                             window.open($(this).attr('href'));
-                             event.preventDefault();
-                             });
-
 
     //Show pagepicker to start
     page_picker.show();
