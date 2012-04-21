@@ -187,15 +187,23 @@ span.digit
 {
     background-color: #82B4FF;
 }
+
 #menu_bar
 {
+    position:relative;
     color:white;
     background-color: #C0C0FF;
     text-align: right;
     padding: 0.25em 1em;
 }
 
-
+#menu_bar_left
+{
+    position: absolute;
+    left: 1em;
+    top: 0.25em;
+    text-align:left;
+}
 
 #instructions
 {

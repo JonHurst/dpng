@@ -73,9 +73,9 @@ class CommandProcessor:
         if self.task == "init":
             title = data.get_meta("title")
             if not title: title = ""
-            guideline_link = data.get_meta("guidelines")
-            if not guideline_link: guideline_link = os.path.join(self.project_dir, "guidelines.html")
-            json.dump([title, guideline_link], sys.stdout)
+            project_page_link = data.get_meta("project_page")
+            if not project_page_link: project_page_link = os.path.join(self.project_dir, "project.html")
+            json.dump([title, project_page_link], sys.stdout)
         elif self.task in ("preproof", "proof"):
             pageid = self.form.getfirst("pageid")
             if not pageid: raise CommandException(CommandException.NOPAGEID)
