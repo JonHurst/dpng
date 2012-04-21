@@ -17,6 +17,7 @@ data_path = "../data/"
 class CommandProcessor:
 
     re_tws = re.compile(r"[^\S\n]+\n", re.UNICODE) #whitespace excluding newlines followed by a newline
+    re_sts = re.compile(r"[ \t]+") #sequence of spaces and tabs
 
     def __init__(self, form):
         projid = form.getfirst("projid")
@@ -110,6 +111,7 @@ class CommandProcessor:
             if not text: text = ""
             if len(text) > 10240: raise CommandException(CommandException.TOOLARGETEXT)
             text = self.re_tws.sub(r"\n", text).rstrip() #strip trailing EOL and EOS whitespace
+            text = self.re_sts.sub(" ", text)#collapse sequences of spaces and tabs to a single space
             data = project_data.ProjectData(self.project_file, True)#write lock
             data.set_text(pageid, text, self.user)
         data.save() #unlock

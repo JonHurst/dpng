@@ -304,9 +304,9 @@ function proofreader() {
       $('#text_container').css('display', 'block');//we may have hidden when showing editor
       text = text.replace(/[^\S\n]+\n/g, "\n");//strip EOL whitespace
       text = text.replace(/\s+$/, ""); //strip EOS whitespace
-      //TODO: The following may need to be disabled for formatting
       text = text.replace(/^\n+\n/, "\n"); //ensure at most one blank line at start of text
       text = text.replace(/\n+\n/g, "\n\n"); //ensure at most one blank line elsewhere
+      text = text.replace(/[ \t]+/g, " ");//collapse space and tab sequences to a single space
       if(text_history.length && text == text_history[text_history.length - 1]) {
         select();//safari loses position
         return; //if there is no change, there is nothing to do
