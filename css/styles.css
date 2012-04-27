@@ -37,7 +37,7 @@ body
 {
     overflow: auto;
     overflow-y: scroll; /*permanent scroll bars if supported*/
-
+    background-color: white;
 }
 
 #text_container, #editor
