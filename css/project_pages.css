@@ -1,0 +1,58 @@
+body
+{
+    font-size: 0.9em;
+    background-color: #303030;
+    margin: 0;
+}
+
+#page
+{
+    font-size: 1em;
+    color: black;
+    background-color: white;
+    max-width: 50em;
+    margin: 1em auto;
+    padding: 1em 3em;
+    border-radius: 5px;
+    line-height: 1.5em;
+}
+
+table
+{
+    border-collapse: collapse;
+    border: 1px solid black;
+}
+
+tr, td, th
+{
+    vertical-align: top;
+    border: 1px solid black;
+    padding: 1em;
+}
+
+td.pre
+{
+    font-family: courier, monospace;
+}
+
+.center
+{
+    text-align: center;
+}
+
+.large
+{
+    font-size: 2.5em;
+}
+
+h1, h2
+{
+    margin-top: 1em;
+}
+
+div.bar
+{
+    margin: 0;
+    background-color: #E0E0FF;
+    padding: 0.25em 1em;
+}
