@@ -456,7 +456,6 @@ function proofreader() {
       }
       //set scroll position
       var row_height = ta.scrollHeight / total_lines;
-      console.log(caret_line + " " + total_lines);
       ta.scrollTop = caret_line * row_height - (ta.clientHeight - row_height)/ 2;
       //set focus to the control
       ta.focus();
