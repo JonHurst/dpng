@@ -259,12 +259,12 @@ function proofreader() {
         element = $('div.current_line span').get(current_token);
       var text = text_history[text_history.length -1];
       var caret_pos = lines[current_line];
-      //I feel so dirty... have to browser sniff for Opera because it includes newline
-      //characters in the count for the caret
-      var opera = false;
-      if(navigator.userAgent.toLowerCase().match(/opera/)) {
-        caret_pos += current_line;
-         }
+      //calculate equivalent line including blank lines
+      var line = 0;
+      while(line < all_lines.length){
+        if(all_lines[line] >= caret_pos) break;
+        line++;
+        }
       $('#text_container').css('display', 'none');
       if(element == undefined) {
         caret_pos += Math.round($('div.current_line').text().length * pos);
@@ -275,7 +275,7 @@ function proofreader() {
           caret_pos += $(element).text().length;
         }
       }
-      editor.activate(text, caret_pos);
+      editor.activate(text, caret_pos, line, all_lines.length);
     }
 
 
@@ -433,12 +433,17 @@ function proofreader() {
     var ta = $('#editor textarea').get(0);
 
 
-    function activate(text, caret_pos) {
+    function activate(text, caret_pos, caret_line, total_lines) {
       ta.removeAttribute('readonly');
       ta.value = text;
       $('#editor').css('display', 'block');
       command_bar.editor_mode(true);
       keyhandler.editor();
+      //I feel so dirty... have to browser sniff for Opera because it includes newline
+      //characters in the count for the caret
+      if(navigator.userAgent.toLowerCase().match(/opera/)) {
+        caret_pos += caret_line;
+      }
       //set caret position either with setSelectionRange or createTextRange as available
       if(ta.setSelectionRange)
         ta.setSelectionRange(caret_pos, caret_pos);
@@ -450,17 +455,8 @@ function proofreader() {
         range.select();
       }
       //set scroll position
-      var total_lines = 0, caret_line = 0;
-      var char_pos = 0, curr_char;
-      while((curr_char = text.charAt(char_pos))) {
-        if(curr_char == '\n') {
-          total_lines++;
-          if(char_pos < caret_pos) caret_line++;
-          }
-        char_pos++;
-      }
-      total_lines++;
       var row_height = ta.scrollHeight / total_lines;
+      console.log(caret_line + " " + total_lines);
       ta.scrollTop = caret_line * row_height - (ta.clientHeight - row_height)/ 2;
       //set focus to the control
       ta.focus();
