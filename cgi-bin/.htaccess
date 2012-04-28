@@ -1,0 +1,6 @@
+AuthType Basic
+AuthName "Authorised users only."
+AuthUserFile /home/jon/public_html/.htpasswd
+Require valid-user
+Options ExecCGI
+SetHandler cgi-script
