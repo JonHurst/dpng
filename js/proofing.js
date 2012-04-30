@@ -653,6 +653,9 @@ function proofreader() {
     $('#hl-punc').change(function(eventObject) {
                             $('#text_container').toggleClass("nohl");
                         });
+    $('#hl-punc').focus(function() {
+                          $('#text_container').focus();
+                        });
     editor_mode(false);
 
     function enabled(state) {
