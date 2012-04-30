@@ -588,7 +588,7 @@ function proofreader() {
         event.preventDefault();
         event.stopPropagation();//prevent down arrow scrolling focused pane
       }
-      else if(event.which == 69 || event.which == 73) { //e or i = start editor
+      else if(event.which == 69 || event.which == 73 || event.which == 27) { //e or i or ESC = start editor
         text_container.edit(0);
         event.preventDefault(); //prevent keystroke reaching editor
         event.stopPropagation();
