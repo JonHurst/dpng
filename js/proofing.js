@@ -650,6 +650,9 @@ function proofreader() {
     $('#change_page').click(function(){command.list(projid);});
     $('#submit').click(function(){command.submit(projid);});
     $('#close_editor').click(editor.deactivate);
+    $('#hl-punc').change(function(eventObject) {
+                            $('#text_container').toggleClass("nohl");
+                        });
     editor_mode(false);
 
     function enabled(state) {
@@ -670,11 +673,13 @@ function proofreader() {
         $('#change_page').css("display", "none");
         $('#submit').css("display", "none");
         $('#close_editor').css("display", "inline");
+        $('#control_bar_left').css("display", "none");
       }
       else {
         $('#change_page').css("display", "inline");
         $('#submit').css("display", "inline");
         $('#close_editor').css("display", "none");
+        $('#control_bar_left').css("display", "block");
       }
     }
 

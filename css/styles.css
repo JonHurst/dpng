@@ -178,6 +178,11 @@ span.punc
     background-color: #A8FFA8;
 }
 
+#text_container.nohl span.punc
+{
+    background-color: transparent;
+}
+
 span.stealth
 {
     border-bottom: solid green 2px;
@@ -202,6 +207,14 @@ span.digit
     position: absolute;
     left: 1em;
     top: 0.25em;
+    text-align:left;
+}
+
+#control_bar_left
+{
+    position: absolute;
+    left: 0.5em;
+    top: 1em;
     text-align:left;
 }
 
