@@ -233,8 +233,8 @@ span.digit
     top: 0;
     min-height: 100%;
     width: 100%;
-    opacity: 0.6;
-    background-color: #303030;
+    opacity: 0.9;
+    background-color: #202020;
 
     /* display: none; */
 }
