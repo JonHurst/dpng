@@ -228,7 +228,7 @@ span.digit
 {
     position: absolute;
     left: 0.5em;
-    top: 1em;
+    bottom: 0.25em;
     text-align:left;
 }
 
