@@ -1,0 +1,30 @@
+span.diff_sub
+{
+    background-color: #FF8080;
+}
+
+span.diff_chg
+{
+    background-color: #FFFF00;
+}
+
+span.diff_add
+{
+    background-color: #80FF80;
+}
+
+
+.diff_header
+{
+    color: grey;
+}
+
+td
+{
+    padding: 0 0.25em;
+}
+
+table.diff
+{
+    margin: 2em 1em;
+}

@@ -130,6 +130,18 @@ class ProjectData:
                 if self.project_data[X].has_key(field)]
 
 
+    def get_group(self, pageid, prefix):
+        """Returns a tuple of users in a data group, e.g if PREFIX is
+        "proof" and page has proof/jon and proof/don it will return
+        ("proof/jon", "proof/don")"""
+        retval = []
+        if prefix[-1] != "/": prefix += "/"
+        if self.exists(pageid):
+            for k in self.project_data[pageid].keys():
+                if k.startswith(prefix): retval.append(k)
+        return retval
+
+
     def reserve(self, pageid, user, source):
         """Adds a field for USER to the page PAGEID"""
         if self.exists(pageid, user): return
@@ -163,10 +175,18 @@ class ProjectData:
            does not exist"""
         text_data = None
         if user and self.exists(pageid, user):
-           text_data = self.get_data(pageid, user)
+           text_data = self.get_data(pageid, user)[:]
            #replace filename with actual text
            text_data[DATA] = open(os.path.join(self.project_dir, text_data[DATA])).read()
         return text_data
+
+
+    def get_text_sha1(self, pageid, user):
+        """Returns the sha1 hash of the text"""
+        if not self.exists(pageid, user): return None
+        #TODO: It might be worth having a flag to indicate that the field data
+        #is actually a SHA1 -- this will return any data as it stands
+        return self.get_data(pageid, user)[0]
 
 
     def set_lines(self, pageid, lines, status=STATUS_NEW):
