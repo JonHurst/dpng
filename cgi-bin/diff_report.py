@@ -29,7 +29,7 @@ def create_html(project_file):
     data = project_data.ProjectData(project_file)
     data.unlock()
     for page in [X[0] for X in data.get_pages()]:
-        group = data.get_group(page, "proof")
+        group = [X for X in data.get_group(page, "proof") if data.is_done(page, X)]
         diff = difflib.HtmlDiff()
         if len(group) > 1:
             outstr += "<h2>Page %s</h2><p>(%s users)</p>" % (page, len(group))
@@ -54,7 +54,7 @@ def create_html(project_file):
                                                  right_text.splitlines(),
                                                  rev_index[l[0][1]],
                                                  rev_index[a[1]],
-                                                 True, 3)
+                                                 True, 2)
                     outstr += diff_table
     return outstr
 
