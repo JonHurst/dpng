@@ -272,7 +272,8 @@ function proofreader() {
       else {
         caret_pos += Math.round($(element).text().length * pos);
         while((element = element.previousSibling)) {
-          caret_pos += $(element).text().length;
+          if(element.className != "linenum")
+            caret_pos += $(element).text().length;
         }
       }
       editor.activate(text, caret_pos, line, all_lines.length);
@@ -350,6 +351,9 @@ function proofreader() {
       if(response_text.slice(0, current_sn.length) != current_sn)
         return;//out of sequence validation detected -- don't process it
       $('#text').replaceWith(response_text);
+      $('#text div').prepend(function(index, html) {
+                               return "<div class='linenum'>" + (index + 1) + "</div>";
+                             });
       num_lines = $('#text div.line').length;
       $('span.note').replaceWith(
         function() {

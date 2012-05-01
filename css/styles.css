@@ -119,18 +119,32 @@ body
 .line
 {
     white-space:pre;
-    font-family: 'PT Mono', monospace, sans;
-    font-size: 14pt;
-    background-color: white;
     color: black;
-    padding-left:2em;
     line-height: 1.5;
 }
 
 .blank
 {
     min-height:21pt;
+}
+
+.line, .blank
+{
+    position: relative;
+    padding-left:2em;
+    font-size: 14pt;
+    font-family: 'PT Mono', monospace, sans;
     background-color: white;
+}
+
+.linenum
+{
+    position: absolute;
+    width: 2em;
+    left: 2px;
+    color: #B0B0B0;
+    top: 2px;
+    font-size:8pt;
 }
 
 .current_line
