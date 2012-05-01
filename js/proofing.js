@@ -510,6 +510,7 @@ function proofreader() {
     function submit_callback(ob, status) {
       if(ob == "OK") {
         text_container.set_clean();
+        page_picker.show();
       }
       else {
         $("status").text("Save failed");
