@@ -373,3 +373,11 @@ span.current
 {
     color: #D00000;
 }
+
+div.blank_page
+{
+    text-align:center;
+    padding: 2em;
+    margin: 2em;
+    border: 2px solid blue;
+}

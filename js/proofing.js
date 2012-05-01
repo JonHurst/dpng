@@ -283,18 +283,24 @@ function proofreader() {
       var lines = [];
       var c;
       var text_ob = $("<div id='text'/>");
-      text_ob.empty();
-      for(c = 0; c < all_lines.length - 1; c++) {
-        lines[c] = text.slice(all_lines[c], all_lines[c + 1] - 1);
+      // text_ob.empty();
+      if(text.length > 0) {
+        for(c = 0; c < all_lines.length - 1; c++) {
+          lines[c] = text.slice(all_lines[c], all_lines[c + 1] - 1);
+        }
+        lines[all_lines.length - 1] = text.slice(all_lines[all_lines.length - 1], text.length);
+        for(c = 0; c < lines.length; c++) {
+          if(lines[c].length)
+            text_ob.append($("<div class='line'/>").text(lines[c]));
+          else
+            text_ob.append("<div class='blank'/>");
+        }
+        num_lines = all_lines.length;
       }
-      lines[all_lines.length - 1] = text.slice(all_lines[all_lines.length - 1], text.length);
-      for(c = 0; c < lines.length; c++) {
-        if(lines[c].length)
-          text_ob.append($("<div class='line'/>").text(lines[c]));
-        else
-          text_ob.append("<div class='blank'/>");
+      else {
+        num_lines = 0;
+        text_ob.append("<div class='blank_page'>Blank Page</div>");
       }
-      num_lines = all_lines.length;
       $('#text').replaceWith(text_ob);
       select();
     }
@@ -331,9 +337,11 @@ function proofreader() {
         $('#status').addClass("warn").text("Not saved");
       }
       local_validate(text);
-      jQuery.get(validator,
-                 {text: text, serial: ++validation_sn, goodwords: goodwords},
-        validator_callback, "html");
+      if(text.length > 0) {
+        jQuery.get(validator,
+                   {text: text, serial: ++validation_sn, goodwords: goodwords},
+                   validator_callback, "html");
+      }
     }
 
 
