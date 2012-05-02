@@ -267,7 +267,8 @@ function proofreader() {
         }
       $('#text_container').css('display', 'none');
       if(element == undefined) {
-        caret_pos += Math.round($('div.current_line').text().length * pos);
+        caret_pos += Math.round(($('div.current_line').text().length -
+                                 $('div.current_line div.linenum').text().length) * pos);
       }
       else {
         caret_pos += Math.round($(element).text().length * pos);
