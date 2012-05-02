@@ -45,6 +45,7 @@ def create_html(project_file):
             else:
                 l = [(len(rev_index[X]), X) for X in rev_index.keys()]
                 l.sort()
+                l.reverse()
                 for a in l[1:]:
                     left_user = rev_index[l[0][1]][0]
                     right_user = rev_index[a[1]][0]
