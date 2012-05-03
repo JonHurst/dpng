@@ -330,21 +330,25 @@ function proofreader() {
     }
 
 
-    function refresh() {
+    function refresh(skip_validate) {
       if(text_history.length == 0) return;
       var text = text_history[text_history.length - 1];
       find_lines(text);
       if(text_history.length == 1 && is_baseline == false) {
         $('#status').removeClass("warn").text("Submitted");
+        command_bar.enable_submit(false);
       }
       else {
         $('#status').addClass("warn").text("Not Submitted");
+        command_bar.enable_submit(true);
       }
-      local_validate(text);
-      if(text.length > 0) {
-        jQuery.get(validator,
-                   {text: text, serial: ++validation_sn, goodwords: goodwords},
-                   validator_callback, "html");
+      if(! skip_validate) {
+        local_validate(text);
+        if(text.length > 0) {
+          jQuery.get(validator,
+                     {text: text, serial: ++validation_sn, goodwords: goodwords},
+                     validator_callback, "html");
+        }
       }
     }
 
@@ -379,7 +383,7 @@ function proofreader() {
 
 
     function get_text() {return text_history[text_history.length - 1];}
-    function is_dirty() {return text_history.length > 1;}
+    function is_dirty() {return is_baseline || text_history.length > 1;}
     function set_clean(){
       text_history = [text_history[text_history.length - 1]];
       if(localStorage) {
@@ -387,7 +391,7 @@ function proofreader() {
         localStorage.removeItem(localStorageID);
       }
       is_baseline = false;
-      $('#status').removeClass("warn").text("Submitted");
+      refresh(true);
     }
 
     function click(event) {
@@ -669,23 +673,11 @@ function proofreader() {
     $('#hl-punc').change(function(eventObject) {
                             $('#text_container').toggleClass("nohl");
                         });
-    $('#hl-punc').focus(function() {
+    $('#hl-punc, #submit, #close_editor').focus(function() {
                           $('#text_container').focus();
                         });
     editor_mode(false);
 
-    function enabled(state) {
-      if(state) {
-        $('#change_page').removeAttr("disabled");
-        $('#submit').removeAttr("disabled");
-        $('#close_editor').removeAttr("disabled");
-      }
-      else {
-        $('#change_page').attr("disabled", "disabled");
-        $('#submit').attr("disabled", "disabled");
-        $('#close_editor').attr("disabled", "disabled");
-      }
-    }
 
     function editor_mode(bool) {
       if(bool) {
@@ -702,9 +694,17 @@ function proofreader() {
       }
     }
 
+
+    function enable_submit(bool) {
+      if(bool)
+        $('#submit').removeAttr("disabled");
+      else
+        $('#submit').attr("disabled", "disabled");
+    }
+
     return {
       editor_mode: editor_mode,
-      enabled: enabled
+      enable_submit: enable_submit
     };
   }
   var command_bar = command_bar_func();
@@ -746,7 +746,6 @@ function proofreader() {
 
     function show() {
       $('#modal_greyout').css("display", "block");
-      command_bar.enabled(false);
       keyhandler.none();
       refresh();
     }
@@ -754,7 +753,6 @@ function proofreader() {
 
     function hide() {
       $('#pagepicker').css("display", "none");
-      command_bar.enabled(true);
       keyhandler.normal();
     }
 
