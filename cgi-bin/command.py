@@ -81,6 +81,7 @@ class CommandProcessor:
             if not pageid: raise CommandException(CommandException.NOPAGEID)
             text_data = data.get_text(pageid, self.user)
             text = text_data[project_data.DATA] if text_data else ""
+            is_baseline = False if data.is_done(pageid, self.user) else True
             images = [os.path.join(self.project_dir, X) if X else None
                         for X in data.get_images(pageid)[project_data.DATA]]
             validator = data.get_meta("validator")
@@ -88,7 +89,8 @@ class CommandProcessor:
             json.dump([pageid, text, images,
                        data.get_lines(pageid)[project_data.DATA],
                        data.get_meta("goodwords"),
-                       validator], sys.stdout)
+                       validator,
+                       is_baseline], sys.stdout)
         elif self.task == "lines":
             pageid = self.form.getfirst("pageid")
             if not pageid: raise CommandException(CommandException.NOPAGEID)

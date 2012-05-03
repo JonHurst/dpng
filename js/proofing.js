@@ -148,10 +148,12 @@ function proofreader() {
     var goodwords;
     var validation_sn = 0;
     var validator = "";
+    var is_baseline = true;
 
-    function init(text, _goodwords, _validator) {
+    function init(text, _goodwords, _validator, _is_baseline) {
       goodwords = _goodwords || "";
       validator = _validator;
+      is_baseline = _is_baseline;
       current_line = 0;
       current_token = -1;
       var localStorageID = projid + "/" + page_id;
@@ -332,11 +334,11 @@ function proofreader() {
       if(text_history.length == 0) return;
       var text = text_history[text_history.length - 1];
       find_lines(text);
-      if(text_history.length == 1) {
-        $('#status').removeClass("warn").text("Unchanged");
+      if(text_history.length == 1 && is_baseline == false) {
+        $('#status').removeClass("warn").text("Submitted");
       }
       else {
-        $('#status').addClass("warn").text("Not saved");
+        $('#status').addClass("warn").text("Not Submitted");
       }
       local_validate(text);
       if(text.length > 0) {
@@ -384,7 +386,8 @@ function proofreader() {
         var localStorageID = projid + "/" + page_id;
         localStorage.removeItem(localStorageID);
       }
-      $('#status').removeClass("warn").text("Saved");
+      is_baseline = false;
+      $('#status').removeClass("warn").text("Submitted");
     }
 
     function click(event) {
@@ -500,7 +503,7 @@ function proofreader() {
       control_data = ob;
       if(ob[0] != page_id) return; //out of synch callback
       $('#pageid').text(page_id);
-      text_container.init(ob[1], ob[4], ob[5]);
+      text_container.init(ob[1], ob[4], ob[5], ob[6]);
       image_container.init(ob[2], ob[3]);
       $('#modal_greyout').css("display", "none");
     }
@@ -523,7 +526,6 @@ function proofreader() {
     function submit_callback(ob, status) {
       if(ob == "OK") {
         text_container.set_clean();
-        page_picker.show();
       }
       else {
         $("status").text("Save failed");
@@ -533,7 +535,7 @@ function proofreader() {
 
     function list(proj_id) {
       if(text_container.is_dirty()) {
-        var answer = window.confirm("Page has not been saved. Continue anyway?");
+        var answer = window.confirm("Page has not been submitted. Continue anyway?");
         if(answer == false) return;
       }
       page_picker.show();
