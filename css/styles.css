@@ -6,78 +6,64 @@
 
 body
 {
-    background-color: #303030;
-    position: relative;
+    font-size: 0.9em;
 }
 
-#control_container
+#slider
 {
+    width:400px;
     margin: 10px auto;
-    padding: 40px 20px;
-    width: 800px;
-    height: 450px;
-    background-color: #A0A0A0;
-    border-radius: 5px;
-    clear:both;
-    border: 2px solid black;
-    z-index: 0;
 }
 
-#image_container, #text_container, #editor
+
+#image_container, #text_container, #editor, #title_bar, #control_bar, #spacer
 {
     position: relative;
-    height: 48%; /*all browsers*/
-    height: -moz-calc(50% - 10px); /*firefox*/
-    height: calc(50% - 10px); /*IE9 and future*/
-    margin:auto;
-    border: 2px inset #A0A0A0;
+    margin: 0 auto;
+    width:800px;
+    font-size: 1em;
+}
+
+#title_bar
+{
+    margin-top: 0;
+    font-size: 1.15em;
+}
+
+#spacer
+{
+    height: 16px;
+    margin-bottom: 0;
 }
 
 #image_container, #text_container
 {
+    margin-top: 20px;
+    background-color: white;
+    height: 150px;
+}
+
+#images, #text
+{
+    height: 100%;
     overflow: auto;
     overflow-y: scroll; /*permanent scroll bars if supported*/
-    background-color: white;
-}
-
-#text_container, #editor
-{
-    margin-top: 10px;
-}
-
-#image_container
-{
-    text-align: center;
-}
-
-#text
-{
-    position: relative;
 }
 
 #editor
 {
     display: none;
+    height: 100%;
 }
 
 #image_highlight
 {
-    z_index:1;
-    position: absolute;
+    z-index:1;
     border: blue 2px solid;
-    width:99%;
-    width: -moz-calc(100%-2px);
-    width: calc(100%-2px);
-    top:130px;
     height: 40px;
     background-color: #A0A0FF;
     opacity: 0.2;
     filter: alpha(opacity=20);
-}
-
-#image_highlight.wait
-{
-    display: none;
 }
 
 #image_container img
@@ -90,11 +76,6 @@ body
     margin: auto;
     border: 1px solid black;
     z-index:0;
-}
-
-#image_container.wait img
-{
-    width: 30px;
 }
 
 
@@ -153,7 +134,7 @@ body
 }
 
 
-textarea
+#editor textarea
 {
     position: absolute;
     -moz-box-sizing: border-box;
@@ -171,11 +152,10 @@ textarea
     background-color: #FFFFA0;
 }
 
-#close_editor {
-    background-color: #FFFFC0;
+#control_bar.editor
+{
+    background-color: #FFFFA0;
 }
-
-
 
 span.error
 {
@@ -241,57 +221,12 @@ span.digit
     max-width: 60em;
 }
 
-#modal_greyout
-{
-    position: absolute;
-    top: 30px;
-    min-height: 100%;
-    width: 100%;
-    opacity: 0.9;
-    background-color: #202020;
-
-    /* display: none; */
-}
-
-
-
-#pagepicker
-{
-    /* display: none; */
-    position: absolute;
-    max-height: 100%;
-    width: 100%;
-    top: 30px;
-    z-index: 2;
-}
-
-#pagepicker > div
-{
-    position: relative;
-    margin: 0 auto;
-    background-color: white;
-    width: 30em;
-    margin-top: 1em;
-    padding: 0 0 1em 1em;
-    border: solid black 1px;
-    border-radius: 5px;
-    -moz-box-shadow: 0 0 5px 5px #888;
-    -webkit-box-shadow: 0 0 5px 5px#888;
-    box-shadow: 0 0 5px 5px #888;
-}
-
-#pagepicker h1
-{
-    font-size: 1.3em;
-    margin: 1em 0 0.5em 0;
-}
-
 #pagepicker table
 {
     width:80%;
-    margin: auto;
+    margin: 20px auto;
     overflow: auto;
-    border: solid black 2px;
+    border: solid black 1px;
     text-align: center;
     border-collapse: collapse;
 
@@ -300,67 +235,65 @@ span.digit
 #pagepicker tr, #pagepicker td, #pagepicker th
 {
     border: solid black 1px;
+    padding: 0.2em 0.5em;
 }
 
-#pagepicker_controls
+#pagepicker td, #pagepicker th
 {
-    margin-top: 2em;
-    text-align: right;
+    font-size: 0.9em;
 }
 
-button
+#pagepicker table a
 {
-    width: 10em;
+    color: blue;
 }
 
-#pagepicker_tables
+#control_bar .ui-button-text, #pagepicker .ui-button-text
 {
-    max-height: 30em;
-    overflow: auto;
+    width: 8em;
+    font-size: 0.9em;
+    line-height: 1.1;
 }
+
 
 #control_bar
 {
     position: relative;
-    padding-top: 10px;
+    margin-top: 10px;
     text-align: right;
+    padding: 3px 0;
 }
 
-#title_bar
+#close_editor
 {
-    position: absolute;
-    width: 100%;
-    height:25px;
-    top: 0;
-    left: 0;
-    background-color: #C0C0FF;
-    border-top-left-radius: 5px;
-    border-top-right-radius: 5px;
-    padding: 2px 0;
+    display: none;
+}
+
+#control_bar.editor button, #control_bar.editor #control_bar_left
+{
+    display: none;
+}
+
+#control_bar.editor #close_editor
+{
+    display: inline;
 }
 
 #title
 {
     padding-left: 1em;
+    line-height: 1.6em;
 }
 
-#close
-{
-    position: absolute;
-    right:2px;
-    top: 2px;
-    margin: 0;
-    padding: 0;
-}
 
 #page
 {
     position: absolute;
     top: 3px;
-    right: 30px;
+    right: 5px;
     padding: 0 2px;
     text-align: center;
-    background-color: #C0C0FF;
+
 }
 
 #page span

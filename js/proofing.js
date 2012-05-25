@@ -29,12 +29,24 @@ function proofreader() {
   }
   jQuery.getJSON(ajax_interface, { verb:"get", task: "init", projid: projid}, init_callback);
 
-  //use jQuery ui to make control_container resizable
-  function on_control_resize_stop(event, ui) {
-    image_container.select();
-    text_container.select();
+
+  //set up jQuery ui
+  function slide(event, ui) {
+      $("#spacer, #title_bar, #image_container, #text_container, #control_bar").width(ui.value);
   }
-  $('#control_container').resizable({stop: on_control_resize_stop});
+
+  $("#slider").slider({ value: 800,
+                        min: 400,
+                        max: 1500,
+                        step: 25,
+                        slide: slide});
+  $("#pagepicker").dialog({autoOpen: false, modal:true, width:500, height:600, position: ['center', 50]});
+
+  $("#image_container, #text_container").resizable({handles: "s", minHeight: 100});
+  $("#spacer").resizable({handles: "s", minHeight: 16});
+  $("#change_page, #submit, #reserve, #close_editor").button();
+  $("#tabs").tabs();
+
 
   //open all menu_bar links in new windows
   $('#menu_bar a').click(function(event) {
@@ -67,11 +79,7 @@ function proofreader() {
       var target = event.currentTarget;
       var pos = target.getAttribute('alt');
       $('#image_container img').eq(pos).replaceWith(target);
-      loaded_images++;
-      if(loaded_images == 3) {
-        $('#image_container').removeClass('wait');
-        select();
-      }
+      select();
     }
 
 
@@ -81,8 +89,9 @@ function proofreader() {
       loaded_images = 0;
       current_line = 0;
       $('#image_container').addClass('wait');
-      for(var c = 0; c < 3; c++)
-        load_image(_images[c], c);
+      load_image(_images[1], 1);
+      load_image(_images[0], 0);
+      load_image(_images[2], 2);
     }
 
 
@@ -102,8 +111,8 @@ function proofreader() {
       $("#image_highlight").offset(highlight_pos);
       //scroll to center highlight
       var scroll_top = $('#context-image-top').height() +
-                         line_offset - $('#image_container').height() / 2;
-      $("#image_container").scrollTop(scroll_top);
+                         line_offset - $('#images').height() / 2;
+      $("#images").scrollTop(scroll_top);
       return offset;
     }
 
@@ -167,7 +176,7 @@ function proofreader() {
         refresh();
       }
       else {
-        text_container.change_text(text);
+        change_text(text);
       }
     }
 
@@ -193,8 +202,9 @@ function proofreader() {
           $('div.current_line span').eq(current_token).addClass("current");
         }
         var scroll_top = current_line_div.position().top +
-          (current_line_div.height() -  $('#text_container').height()) / 2;
-        $('#text_container').scrollTop(scroll_top);
+          $('#text').scrollTop() +
+          (current_line_div.height() -  $('#text').height()) / 2;
+        $('#text').scrollTop(scroll_top);
       }
       return offset;
     }
@@ -267,7 +277,7 @@ function proofreader() {
         if(all_lines[line] >= caret_pos) break;
         line++;
         }
-      $('#text_container').css('display', 'none');
+      $('#text').css('display', 'none');
       if(element == undefined) {
         caret_pos += Math.round(($('div.current_line').text().length -
                                  $('div.current_line div.linenum').text().length) * pos);
@@ -311,7 +321,7 @@ function proofreader() {
 
 
     function change_text(text) {
-      $('#text_container').css('display', 'block');//we may have hidden when showing editor
+      $('#text').css('display', 'block');//we may have hidden when showing editor
       text = text.replace(/[^\S\n]+\n/g, "\n");//strip EOL whitespace
       text = text.replace(/\s+$/, ""); //strip EOS whitespace
       text = text.replace(/^\n+\n/, "\n"); //ensure at most one blank line at start of text
@@ -358,6 +368,7 @@ function proofreader() {
       if(response_text.slice(0, current_sn.length) != current_sn)
         return;//out of sequence validation detected -- don't process it
       $('#text').replaceWith(response_text);
+      $('#text').attr("class", "ui-widget-content ui-corner-all");//restore classes
       $('#text div').prepend(function(index, html) {
                                return "<div class='linenum'>" + (index + 1) + "</div>";
                              });
@@ -454,6 +465,7 @@ function proofreader() {
 
 
     function activate(text, caret_pos, caret_line, total_lines) {
+      console.log(ta);
       ta.removeAttribute('readonly');
       ta.value = text;
       $('#editor').css('display', 'block');
@@ -509,7 +521,6 @@ function proofreader() {
       $('#pageid').text(page_id);
       text_container.init(ob[1], ob[4], ob[5], ob[6]);
       image_container.init(ob[2], ob[3]);
-      $('#modal_greyout').css("display", "none");
     }
 
 
@@ -538,10 +549,6 @@ function proofreader() {
 
 
     function list(proj_id) {
-      if(text_container.is_dirty()) {
-        var answer = window.confirm("Page has not been submitted. Continue anyway?");
-        if(answer == false) return;
-      }
       page_picker.show();
     }
 
@@ -681,16 +688,10 @@ function proofreader() {
 
     function editor_mode(bool) {
       if(bool) {
-        $('#change_page').css("display", "none");
-        $('#submit').css("display", "none");
-        $('#close_editor').css("display", "inline");
-        $('#control_bar_left').css("display", "none");
+        $('#control_bar').addClass("editor");
       }
       else {
-        $('#change_page').css("display", "inline");
-        $('#submit').css("display", "inline");
-        $('#close_editor').css("display", "none");
-        $('#control_bar_left').css("display", "block");
+        $('#control_bar').removeClass("editor");
       }
     }
 
@@ -711,12 +712,6 @@ function proofreader() {
 
 
   function pagepicker_func() {
-
-    function cancel() {
-      $('#modal_greyout').css("display", "none");
-      hide();
-    }
-    $('#cancel').click(cancel);
 
 
     function reserve() {
@@ -745,15 +740,15 @@ function proofreader() {
 
 
     function show() {
-      $('#modal_greyout').css("display", "block");
       keyhandler.none();
+      $('#pagepicker').dialog('open');
       refresh();
     }
 
 
     function hide() {
-      $('#pagepicker').css("display", "none");
       keyhandler.normal();
+      $('#pagepicker').dialog('close');
     }
 
 
@@ -777,11 +772,6 @@ function proofreader() {
         }
       }
       $('#' + list_type).replaceWith($("<div id='" + list_type + "'/>").append(content));
-      $('#pagepicker').css("display", "block");
-      if($('#res table').length)
-        $('#res a').eq(0).focus();
-      else
-        $('#reserve').focus();
     }
 
 

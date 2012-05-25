@@ -4,68 +4,68 @@
   <head>
     <title>Experimental Proofreading Control</title>
     <link rel="stylesheet" type="text/css" href="../css/styles.css"/>
-    <link href='http://fonts.googleapis.com/css?family=PT+Mono&amp;subset=latin,latin-ext' rel='stylesheet' type='text/css'/>
-    <link type="text/css" href="../css/ui-lightness/jquery-ui-1.8.18.custom.css" rel="stylesheet" />
+    <link href='http://fonts.googleapis.com/css?family=PT+Mono&amp;subset=latin,latin-ext'
+          rel='stylesheet' type='text/css'/>
+    <link type="text/css" href="../css/smoothness/jquery-ui-1.8.20.custom.css" rel="stylesheet" />
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"
             type="text/javascript"></script>
-    <script type="text/javascript" src="../js/jquery-ui-1.8.18.custom.min.js"></script>
+    <script type="text/javascript" src="../js/jquery-ui-1.8.20.custom.min.js"></script>
     <script src="../js/proofing.js" type="text/javascript"></script>
   </head>
   <body>
-    <div id="menu_bar">
+    <div id="menu_bar" class="ui-widget-header">
       <a href="http://doc.infosnel.nl/extreme_utf-8.html">Character table</a> |
       <a href="../html/controls.html">Controls</a>
       <div id="menu_bar_left">
         <a id="project_link" href="#">Project page</a>
       </div>
     </div>
-    <div id="control_container"  class="ui-widget-content">
-      <div id="title_bar">
-        <p id="page">Page:<span id="pageid"></span> Status:<span id="status"></span></p>
-        <p id="title"></p>
-        <p id="close"><a href="../index.html"><img src="../images/close.png" title="close" alt="close"/></a></p>
-      </div>
-      <div class="wait" id="image_container">
+    <div id="slider"></div>
+    <div id="spacer"></div>
+    <div id="title_bar" class="ui-widget-header ui-corner-all">
+      <p id="page">Page:<span id="pageid"></span> Status:<span id="status"></span></p>
+      <p id="title"></p>
+    </div>
+    <div class="ui-widget" id="image_container">
+      <div id="images" class="ui-widget-content ui-corner-all">
         <div id="context-image-top">
-          <img src="../images/wait30.gif" alt="wait"/>
-          <div class="grayout"></div>
+          <img src="../images/blank.png" alt="blank"/>
         </div>
         <div id="main-image">
-          <img src="../images/wait30.gif" alt="wait"/>
+          <img src="../images/blank.png"  alt="blank"/>
           <div id="image_highlight"></div>
         </div>
         <div id="context-image-bottom">
-          <img src="../images/wait30.gif" alt=""/>
-          <div class="grayout"></div>
+          <img src="../images/blank.png"  alt="blank"/>
         </div>
-      </div>
-      <div id="text_container">
-        <div id="text"></div>
-      </div>
-      <div id="editor">
-        <textarea wrap="off" readonly="readonly" rows='' cols=''></textarea>
-      </div>
-      <div id="control_bar">
-        <div id="control_bar_left">
-          <input id="hl-punc" type="checkbox" checked="checked"/> Highlight punctuation
-        </div>
-        <button id="close_editor">Close editor</button>
-        <button id="change_page">Change Page</button>
-        <button id="submit">Submit</button>
       </div>
     </div>
-    <div id="modal_greyout"></div>
-    <div id="pagepicker">
-      <div>
-        <div id="pagepicker_tables">
-          <h1>Reserved</h1>
+    <div id="text_container" class="ui-widget">
+      <div id="text" class="ui-widget-content ui-corner-all"></div>
+      <div id="editor" class="ui-widget-content ui-corner-all">
+        <textarea wrap="off" readonly="readonly" rows='' cols=''></textarea>
+      </div>
+    </div>
+    <div id="control_bar">
+      <div id="control_bar_left">
+        <input id="hl-punc" type="checkbox" checked="checked"/> Highlight punctuation
+      </div>
+      <button id="close_editor">Close editor</button>
+      <button id="change_page">Change Page</button>
+      <button id="submit">Submit</button>
+    </div>
+    <div id="pagepicker" title="Pages">
+      <div id="tabs">
+        <ul>
+          <li><a href="#res_tab">Reserved</a></li>
+          <li><a href="#done_tab">Done</a></li>
+        </ul>
+        <div id="res_tab">
+          <button id="reserve">Reserve Page</button>
           <div id="res"></div>
-          <h1>Done</h1>
-          <div id="done"></div>
         </div>
-        <div id="pagepicker_controls">
-          <button id="reserve">Get Page</button>
-          <button id="cancel">Cancel</button>
+        <div id="done_tab">
+          <div id="done"></div>
         </div>
       </div>
     </div>
