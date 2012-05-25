@@ -7,7 +7,7 @@
 body
 {
     font-size: 0.9em;
-    background-color: #808080;
+    background-color: #404040;
 }
 
 #slider
@@ -31,6 +31,18 @@ body
     font-size: 1.15em;
 }
 
+#title_bar_right
+{
+    position: absolute;
+    right:0px;
+    top: 0px;
+}
+
+#close span
+{
+    padding: 0;
+}
+
 #spacer
 {
     height: 16px;
@@ -39,7 +51,7 @@ body
 
 #image_container, #text_container
 {
-    margin-top: 20px;
+    margin-top: 10px;
     height: 150px;
 }
 
@@ -54,6 +66,8 @@ body
 {
     display: none;
     height: 100%;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 #image_highlight
@@ -77,6 +91,7 @@ body
     height: auto;/*Fix for IE*/
     margin: auto;
     z-index:0;
+    border-bottom: 3px dotted gray;
 }
 
 
@@ -209,8 +224,14 @@ span.digit
 {
     position: absolute;
     left: 0.5em;
-    bottom: 0.25em;
+    bottom: 0.5em;
     text-align:left;
+    color: white;
+}
+
+#control_bar_left label
+{
+    margin-left: 0.25em;
 }
 
 #instructions
@@ -260,10 +281,9 @@ span.digit
 #control_bar
 {
     position: relative;
-    margin-top: 20px;
+    margin-top: 10px;
     text-align: right;
     padding: 3px 0px;
-    background-color: white;
 }
 
 #close_editor, #submit
@@ -297,7 +317,7 @@ span.digit
 {
     position: absolute;
     top: 3px;
-    right: 5px;
+    right: 60px;
     padding: 0 2px;
     text-align: center;
 
@@ -345,7 +365,11 @@ span.current
 div.blank_page
 {
     text-align:center;
-    padding: 2em;
-    margin: 2em;
+    padding-top: 1em;
+    height: 100%;
     border: 2px solid blue;
+    background-color: white;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
 }
+

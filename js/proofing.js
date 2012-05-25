@@ -33,6 +33,8 @@ function proofreader() {
   //set up jQuery ui
   function slide(event, ui) {
       $("#spacer, #title_bar, #image_container, #text_container, #control_bar").width(ui.value);
+      image_container.select();
+      text_container.select();
   }
 
   $("#slider").slider({ value: 800,
@@ -44,8 +46,8 @@ function proofreader() {
   $("#image_container, #text_container").resizable({handles: "s", minHeight: 100});
   $("#spacer").resizable({handles: "s", minHeight: 16});
   $("#change_page, #submit, #reserve, #close_editor").button();
+  $("#close_interface").button({icons:{primary: "ui-icon-closethick"}, text:false});
   $("#tabs").tabs();
-
 
   //open all menu_bar links in new windows
   $('#menu_bar a').click(function(event) {
@@ -464,7 +466,6 @@ function proofreader() {
 
 
     function activate(text, caret_pos, caret_line, total_lines) {
-      console.log(ta);
       ta.removeAttribute('readonly');
       ta.value = text;
       $('#editor').css('display', 'block');
@@ -696,10 +697,7 @@ function proofreader() {
 
 
     function enable_submit(bool) {
-      if(bool)
-        $('#submit').removeAttr("disabled");
-      else
-        $('#submit').attr("disabled", "disabled");
+      $('#submit').button("option", "disabled", !bool);
     }
 
     return {
@@ -760,13 +758,7 @@ function proofreader() {
       var list_type = ob[0];
       var listing = ob[1];
       var content;
-      if(listing.length == 0) {
-        if(list_type == "res")
-          content = $("<p>Click \"Get Page\" to reserve pages.</p>");
-        else
-          content = $("<p>None</p>");
-      }
-      else {
+      if(listing.length > 0) {
         content = ($("<table/>"));
         for(var c = 0; c < listing.length; c++) {
           content.append($("<tr><td><a href='" +

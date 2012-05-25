@@ -2,7 +2,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <title>Experimental Proofreading Control</title>
+    <title>Proofreading</title>
     <link rel="stylesheet" type="text/css" href="../css/styles.css"/>
     <link href='http://fonts.googleapis.com/css?family=PT+Mono&amp;subset=latin,latin-ext'
           rel='stylesheet' type='text/css'/>
@@ -23,8 +23,12 @@
     <div id="slider"></div>
     <div id="spacer"></div>
     <div id="title_bar" class="ui-widget-header ui-corner-all">
-      <p id="page">Page:<span id="pageid"></span> Status:<span id="status"></span></p>
+      <p id="page">Page:<span id="pageid"></span> Status:<span id="status"></span>
+      </p>
       <p id="title"></p>
+      <div id="title_bar_right">
+        <a id="close_interface" href="../index.html"></a>
+      </div>
     </div>
     <div class="ui-widget" id="image_container">
       <div id="images" class="ui-widget-content ui-corner-all">
@@ -48,7 +52,7 @@
     </div>
     <div id="control_bar" class="ui-widget ui-corner-all">
       <div id="control_bar_left">
-        <input id="hl-punc" type="checkbox" checked="checked"/> Highlight punctuation
+        <input id="hl-punc" type="checkbox" checked="checked"/><label for="hl-punc">Highlight punctuation</label>
       </div>
       <button id="close_editor">Close editor</button>
       <button id="change_page">Change Page</button>
