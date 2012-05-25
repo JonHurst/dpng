@@ -776,6 +776,7 @@ function proofreader() {
         }
       }
       $('#' + list_type).replaceWith($("<div id='" + list_type + "'/>").append(content));
+      if(list_type == "res") $('#res a:first').focus();
     }
 
 

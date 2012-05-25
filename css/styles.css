@@ -7,6 +7,7 @@
 body
 {
     font-size: 0.9em;
+    background-color: #808080;
 }
 
 #slider
@@ -39,7 +40,6 @@ body
 #image_container, #text_container
 {
     margin-top: 20px;
-    background-color: white;
     height: 150px;
 }
 
@@ -70,12 +70,12 @@ body
 #image_container img
 {
     position: relative;
-    width: 99%; /*all browsers*/
-    width: -moz-calc(100% - 2px);/*firefox*/
-    width: calc(100%-2px);/*IE9 and future*/
+    width: 100%;
+    /* width: 99%; /\*all browsers*\/ */
+    /* width: -moz-calc(100% - 2px);/\*firefox*\/ */
+    /* width: calc(100%-2px);/\*IE9 and future*\/ */
     height: auto;/*Fix for IE*/
     margin: auto;
-    border: 1px solid black;
     z-index:0;
 }
 
@@ -260,9 +260,15 @@ span.digit
 #control_bar
 {
     position: relative;
-    margin-top: 10px;
+    margin-top: 20px;
     text-align: right;
-    padding: 3px 0;
+    padding: 3px 0px;
+    background-color: white;
+}
+
+#close_editor, #submit
+{
+    margin-right:5px;
 }
 
 #close_editor
