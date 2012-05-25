@@ -40,7 +40,6 @@ function proofreader() {
                         max: 1500,
                         step: 25,
                         slide: slide});
-  $("#pagepicker").dialog({autoOpen: false, modal:true, width:500, height:600, position: ['center', 50]});
 
   $("#image_container, #text_container").resizable({handles: "s", minHeight: 100});
   $("#spacer").resizable({handles: "s", minHeight: 16});
@@ -713,6 +712,12 @@ function proofreader() {
 
   function pagepicker_func() {
 
+    $("#pagepicker").dialog(
+      {autoOpen: false,
+       modal:true,
+       width:500, height:600, position: ['center', 50],
+       close: before_close});
+
 
     function reserve() {
       command.reserve(projid);
@@ -724,7 +729,7 @@ function proofreader() {
       event.preventDefault();
       var href = $(event.target).attr('href');
       if(href) {
-        hide();
+        $('#pagepicker').dialog('close');
         command.get_page(projid, href);
       }
     }
@@ -746,9 +751,8 @@ function proofreader() {
     }
 
 
-    function hide() {
+    function before_close() {
       keyhandler.normal();
-      $('#pagepicker').dialog('close');
     }
 
 
@@ -777,7 +781,6 @@ function proofreader() {
 
     return {
       show: show,
-      hide: hide,
       refresh: refresh
       };
     }
