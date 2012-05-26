@@ -32,7 +32,7 @@ function proofreader() {
 
   //set up jQuery ui
   function slide(event, ui) {
-      $("#spacer, #title_bar, #image_container, #text_container, #control_bar").width(ui.value);
+    $("#spacer, #title_bar, #image_container, #text_container, #control_bar, #editor").width(ui.value);
       image_container.select();
       text_container.select();
   }
@@ -50,7 +50,7 @@ function proofreader() {
   $("#tabs").tabs();
 
   //open all menu_bar links in new windows
-  $('#menu_bar a').click(function(event) {
+  $('#menu_bar > a').click(function(event) {
                            window.open($(this).attr('href'));
                            event.preventDefault();
                          });

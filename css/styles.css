@@ -7,13 +7,14 @@
 body
 {
     font-size: 0.9em;
-    background-color: #404040;
+    background-color: #606060;
 }
 
 #slider
 {
-    width:400px;
-    margin: 10px auto;
+    width:20em;
+    font-size:0.8em;
+    margin-top: 7px;
 }
 
 
@@ -216,8 +217,7 @@ span.digit
 {
     position: absolute;
     left: 1em;
-    top: 0.25em;
-    text-align:left;
+    top: 0;
 }
 
 #control_bar_left
@@ -320,7 +320,7 @@ span.digit
     right: 60px;
     padding: 0 2px;
     text-align: center;
-
+    font-size: 0.9em;
 }
 
 #page span
@@ -373,3 +373,7 @@ div.blank_page
     box-sizing: border-box;
 }
 
+#slider.ui-widget-content
+{
+    background: url("images/ui-bg_highlight-soft_75_cccccc_1x100.png") repeat-x  #CCCCCC;
+}
