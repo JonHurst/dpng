@@ -75,7 +75,7 @@ body
 {
     background-color: #E0E0E0;
     margin-top: 3em;
-    padding: 1em;
+    padding: 0.5em;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     overflow: auto;
@@ -418,8 +418,10 @@ td
 
 table.diff
 {
-    margin: 2em auto;
-    min-width: 90%;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    margin: 1em 0;
+    min-width: 100%;
 }
 
 tr.diffs_avbl

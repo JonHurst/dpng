@@ -132,7 +132,7 @@ class CommandProcessor:
                 outstr += "<p>%s identical versions</p>" % len(proofers)
             else:
                 alt_versions = [X for X in rev_index.keys() if X != user_key]
-                diff = difflib.HtmlDiff()
+                diff = difflib.HtmlDiff(wrapcolumn=50)
                 for v in alt_versions:
                     left_user = rev_index[user_key][0]
                     right_user = rev_index[v][0]
@@ -142,7 +142,7 @@ class CommandProcessor:
                                               right_text.splitlines(),
                                               ", ".join(rev_index[user_key]).replace(self.task + "/", ""),
                                               ", ".join(rev_index[v]).replace(self.task + "/", ""),
-                                              True, 2)
+                                              True, 1)
         else:
             outstr += "<p>Only version.</p>"
         sys.stdout.write(outstr.encode("utf8"))
