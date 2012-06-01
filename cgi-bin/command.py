@@ -132,11 +132,11 @@ class CommandProcessor:
                 outstr += "<p>%s identical versions</p>" % len(proofers)
             else:
                 alt_versions = [X for X in rev_index.keys() if X != user_key]
-                diff = difflib.HtmlDiff(wrapcolumn=50)
+                diff = difflib.HtmlDiff(wrapcolumn=35)
+                left_user = rev_index[user_key][0]
+                left_text = unicode(data.get_text(pageid, left_user)[0], "utf8")
                 for v in alt_versions:
-                    left_user = rev_index[user_key][0]
                     right_user = rev_index[v][0]
-                    left_text = unicode(data.get_text(pageid, left_user)[0], "utf8")
                     right_text = unicode(data.get_text(pageid, right_user)[0], "utf8")
                     outstr += diff.make_table(left_text.splitlines(),
                                               right_text.splitlines(),
@@ -230,9 +230,9 @@ class FakeForm:
     def getfirst(self, value):
         values = {
             "projid": "jane-eyre",
-            "verb": "list",
+            "verb": "diffs",
             # "lines" : [1000, 2000, 3000],
-            "pageid" : "008",
+            "pageid" : "007",
             # "text": "This is a yet another test",
             "task": "proof",
             "type": "done"
