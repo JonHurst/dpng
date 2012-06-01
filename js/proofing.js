@@ -32,7 +32,7 @@ function proofreader() {
 
   //set up jQuery ui
   function slide(event, ui) {
-    $("#spacer, #title_bar, #image_container, #text_container, #control_bar, #editor").width(ui.value);
+    $("#spacer, #title_bar, #image_container, #text_container, #control_bar, #editor, #diffs").width(ui.value);
       image_container.select();
       text_container.select();
   }
@@ -521,6 +521,14 @@ function proofreader() {
       $('#pageid').text(page_id);
       text_container.init(ob[1], ob[4], ob[5], ob[6]);
       image_container.init(ob[2], ob[3]);
+      if(ob[6]) {//if baseline
+        $('#diffs').css('display', 'none');
+        $('#diffs').empty();
+      }
+      else {
+        $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id});
+        $('#diffs').css('display', 'block');
+      }
     }
 
 
@@ -541,6 +549,8 @@ function proofreader() {
     function submit_callback(ob, status) {
       if(ob == "OK") {
         text_container.set_clean();
+        $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id});
+        $('#diffs').css('display', 'block');
       }
       else {
         $("status").text("Save failed");

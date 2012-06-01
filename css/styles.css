@@ -18,7 +18,7 @@ body
 }
 
 
-#image_container, #text_container, #editor, #title_bar, #control_bar, #spacer
+#image_container, #text_container, #editor, #title_bar, #control_bar, #spacer, #diffs
 {
     position: relative;
     margin: 0 auto;
@@ -69,6 +69,17 @@ body
     height: 100%;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
+}
+
+#diffs
+{
+    background-color: #E0E0E0;
+    margin-top: 3em;
+    padding: 1em;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    overflow: auto;
+    display: none;
 }
 
 #image_highlight
@@ -375,5 +386,38 @@ div.blank_page
 
 #slider.ui-widget-content
 {
-    background: url("images/ui-bg_highlight-soft_75_cccccc_1x100.png") repeat-x  #CCCCCC;
+    background: url("smoothness/images/ui-bg_highlight-soft_75_cccccc_1x100.png") repeat-x  #CCCCCC;
+}
+
+span.diff_sub
+{
+    background-color: #FF8080;
+}
+
+span.diff_chg
+{
+    background-color: #FFFF00;
+}
+
+span.diff_add
+{
+    background-color: #80FF80;
+}
+
+
+.diff_header
+{
+    color: grey;
+}
+
+td
+{
+    font-size: 0.9em;
+    padding: 0 0.25em;
+}
+
+table.diff
+{
+    margin: 2em auto;
+    min-width: 90%;
 }
