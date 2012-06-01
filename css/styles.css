@@ -73,13 +73,14 @@ body
 
 #diffs
 {
-    background-color: #E0E0E0;
+    background-color: #cccccc;
     margin-top: 3em;
     padding: 0.5em;
     -moz-box-sizing: border-box;
     box-sizing: border-box;
     overflow: auto;
     display: none;
+    font-family: 'PT Mono', monospace, sans;
 }
 
 #image_highlight
@@ -414,6 +415,7 @@ td
 {
     font-size: 0.9em;
     padding: 0 0.25em;
+
 }
 
 table.diff
@@ -427,4 +429,9 @@ table.diff
 tr.diffs_avbl
 {
     background-color: #FFFF66;
+}
+
+th.diff_header
+{
+    font-face: sans-serif;
 }
