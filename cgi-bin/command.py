@@ -9,6 +9,7 @@ import os
 import xml.etree.cElementTree as et
 import project_data
 import re
+import difflib
 
 data_path = "../data/"
 
@@ -39,7 +40,8 @@ class CommandProcessor:
             "get": self.get,
             "list": self.list_pages,
             "save": self.save,
-            "reserve": self.reserve
+            "reserve": self.reserve,
+            "diffs": self.diffs
             }
 
 
@@ -97,6 +99,45 @@ class CommandProcessor:
             image = os.path.join(self.project_dir, data.get_images(pageid)[project_data.DATA][1])
             json.dump([pageid, image, data.get_lines(pageid)[project_data.DATA]], sys.stdout)
         data.unlock()
+
+
+    def diffs(self):
+        pageid = self.form.getfirst("pageid")
+        if not pageid: raise CommandException(CommandException.NOPAGEID)
+        data = project_data.ProjectData(self.project_file)#read lock
+        data.unlock()
+        proofers = [X for X in data.get_group(pageid, self.task) if data.is_done(pageid, X)]
+        outstr = u"Content-type: text/html; charset=UTF-8\n\n"
+        if len(proofers) > 1:
+            rev_index = {}
+            user_key = None
+            for u in proofers:
+                sha1 = data.get_text_sha1(pageid, u)
+                if u == self.user: user_key = sha1
+                if rev_index.has_key(sha1):
+                    rev_index[sha1].append(u)
+                else:
+                    rev_index[sha1] = [u]
+            if not user_key:
+                outstr += "<p>No user version.</p>"
+            elif len(rev_index.keys()) == 1:
+                outstr += "<p>%s identical versions</p>" % len(proofers)
+            else:
+                alt_versions = [X for X in rev_index.keys() if X != user_key]
+                diff = difflib.HtmlDiff()
+                for v in alt_versions:
+                    left_user = rev_index[user_key][0]
+                    right_user = rev_index[v][0]
+                    left_text = unicode(data.get_text(pageid, left_user)[0], "utf8")
+                    right_text = unicode(data.get_text(pageid, right_user)[0], "utf8")
+                    outstr += diff.make_table(left_text.splitlines(),
+                                              right_text.splitlines(),
+                                              ", ".join(rev_index[user_key]).replace(self.task + "/", ""),
+                                              ", ".join(rev_index[v]).replace(self.task + "/", ""),
+                                              True, 2)
+        else:
+            outstr += "<p>Only version.</p>"
+        sys.stdout.write(outstr.encode("utf8"))
 
 
     def save(self):
@@ -180,12 +221,12 @@ class CommandException(Exception):
 class FakeForm:
     def getfirst(self, value):
         values = {
-            "projid": "projid_4f419bd5258cd",
-            "verb": "get",
-            "lines" : [1000, 2000, 3000],
-            # "pageid" : "093",
-            "text": "This is a yet another test",
-            "task": "init"
+            "projid": "jane-eyre",
+            "verb": "diffs",
+            # "lines" : [1000, 2000, 3000],
+            "pageid" : "008",
+            # "text": "This is a yet another test",
+            "task": "proof"
             }
         if value in values.keys():
             return values[value]
@@ -198,6 +239,7 @@ def main():
     if  "test" in sys.argv:
         form = FakeForm()
         os.environ["REMOTE_ADDR"] = "127.0.0.3"
+        os.environ["REMOTE_USER"] = "jon"
     else:
         cgitb.enable()
         form = cgi.FieldStorage()
