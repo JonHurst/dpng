@@ -132,7 +132,7 @@ class CommandProcessor:
                 outstr += "<p>%s identical versions</p>" % len(proofers)
             else:
                 alt_versions = [X for X in rev_index.keys() if X != user_key]
-                diff = difflib.HtmlDiff(wrapcolumn=35)
+                diff = difflib.HtmlDiff(wrapcolumn=40)
                 left_user = rev_index[user_key][0]
                 left_text = unicode(data.get_text(pageid, left_user)[0], "utf8")
                 for v in alt_versions:
