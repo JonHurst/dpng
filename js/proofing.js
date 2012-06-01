@@ -771,7 +771,10 @@ function proofreader() {
       if(listing.length > 0) {
         content = ($("<table/>"));
         for(var c = 0; c < listing.length; c++) {
-          content.append($("<tr><td><a href='" +
+          var class_string = "";
+          if(listing[c][2])
+            class_string = " class='diffs_avbl'";
+          content.append($("<tr" + class_string + "><td><a href='" +
                            listing[c][0] + "'>" +
                            listing[c][0] + "</a></td><td>" +
                            listing[c][1] + "</td></tr>"));

@@ -62,8 +62,16 @@ class CommandProcessor:
         page_list = []
         for pageid, status, timestamp in pages:
             if not data.exists(pageid, self.user): continue
-            if ((listing == "done" and (status & project_data.STATUS_DONE)) or
-                (listing == "res" and not (status & project_data.STATUS_DONE))):
+            if listing == "done" and (status & project_data.STATUS_DONE):
+                diffs_avbl = False
+                if self.task == "proof":
+                    sha1 = data.get_text_sha1(pageid, self.user)
+                    for u in data.get_group(pageid, self.task):
+                        if data.is_done(pageid, u) and data.get_text_sha1(pageid, u) != sha1:
+                            diffs_avbl = True
+                            break
+                page_list.append((pageid, timestamp.strftime("%Y-%m-%d %H:%M"), diffs_avbl))
+            elif listing == "res" and not (status & project_data.STATUS_DONE):
                 page_list.append((pageid, timestamp.strftime("%Y-%m-%d %H:%M")))
         print "Content-type: text/json; charset=UTF-8\n"
         json.dump((listing, page_list), sys.stdout)
@@ -222,11 +230,12 @@ class FakeForm:
     def getfirst(self, value):
         values = {
             "projid": "jane-eyre",
-            "verb": "diffs",
+            "verb": "list",
             # "lines" : [1000, 2000, 3000],
             "pageid" : "008",
             # "text": "This is a yet another test",
-            "task": "proof"
+            "task": "proof",
+            "type": "done"
             }
         if value in values.keys():
             return values[value]

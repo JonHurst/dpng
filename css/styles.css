@@ -421,3 +421,8 @@ table.diff
     margin: 2em auto;
     min-width: 90%;
 }
+
+tr.diffs_avbl
+{
+    background-color: #FFFF66;
+}
