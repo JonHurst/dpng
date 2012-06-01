@@ -348,6 +348,7 @@ function proofreader() {
       if(text_history.length == 1 && is_baseline == false) {
         $('#status').removeClass("warn").text("Submitted");
         command_bar.enable_submit(false);
+        $('#text').focus();
       }
       else {
         $('#status').addClass("warn").text("Not Submitted");
