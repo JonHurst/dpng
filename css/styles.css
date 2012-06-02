@@ -443,6 +443,7 @@ tr.diffs_avbl
     background-color: #cccccc;
     padding: 0.25em 1em;
     display: inline;
+    border-radius: 4px;
 }
 
 #diffs .ui-accordion-content
