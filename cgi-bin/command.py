@@ -128,7 +128,7 @@ class CommandProcessor:
                 else:
                     rev_index[sha1] = [u]
             if not user_key:
-                outstr += "<p>No user version.</p>"
+                outstr += "<p>No user version</p>"
             elif len(rev_index.keys()) == 1:
                 outstr += "<p>%s identical versions</p>" % len(proofers)
             else:
@@ -142,7 +142,7 @@ class CommandProcessor:
                                                   ", ".join(rev_index[user_key]).replace(self.task + "/", ""),
                                                   ", ".join(rev_index[v]).replace(self.task + "/", ""), 1))
         else:
-            outstr += "<p>Only version.</p>"
+            outstr += "<p>Only version</p>"
         sys.stdout.write(outstr.encode("utf8"))
 
 
