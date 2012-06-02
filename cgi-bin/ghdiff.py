@@ -1,7 +1,7 @@
 import difflib
 import os.path
 import xml.sax.saxutils
-
+import re
 
 def escape(text):
     return xml.sax.saxutils.escape(text, {" ": "&nbsp;"})
@@ -23,14 +23,15 @@ def colorize(diff, user_a, user_b):
     lines.reverse()
     while lines and not lines[-1].startswith("@@"):
         lines.pop()
-    first = True
+    line_number = 0
+    re_ln = re.compile(r"@@ -(\d+)")
     while lines:
         line = lines.pop()
         if line.startswith("@@"):
-            if not first:
+            if line_number > 0:
                 yield "</div>"
-            first = False
-            line += " (%s vs %s)" % (user_a, user_b)
+            line_number = int(re_ln.search(line).group(1))
+            line = "%s vs %s (%s)" % (user_a, user_b, line.replace("@", ""))
             yield '<h3><a href="#">' + escape(line) + "</a></h3><div>"
         elif line.startswith("-"):
             if lines:
@@ -40,17 +41,20 @@ def colorize(diff, user_a, user_b):
                 if _next[0].startswith("+") and (len(_next) == 1
                     or _next[1][0] not in ("+", "-")):
                     aline, bline = _line_diff(line[1:], _next.pop(0)[1:])
-                    yield '<div class="delete">-%s</div>' % (aline,)
-                    yield '<div class="insert">+%s</div>' % (bline,)
+                    yield '<div class="delete"><span class="ln">%s</span>-%s</div>' % (line_number, aline)
+                    line_number += 1
+                    yield '<div class="insert"><span class="ln">&nbsp;</span>+%s</div>' % (bline,)
                     if _next:
                         lines.append(_next.pop())
                     continue
                 lines.extend(reversed(_next))
-                yield '<div class="delete">' + escape(line) + '</div>'
+                yield '<div class="delete"><span class="ln">%s</span>%s</div>' % (line_number, escape(line))
+                line_number += 1
         elif line.startswith("+"):
-            yield '<div class="insert">' + escape(line) + '</div>'
+            yield '<div class="insert"><span class="ln">&nbsp;</span>' + escape(line) + '</div>'
         else:
-            yield '<div>' + escape(line) + '</div>'
+            yield '<div><span class="ln">%s</span>%s</div>' % (line_number, escape(line))
+            line_number += 1
     yield "</div>"
 
 

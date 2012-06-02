@@ -450,3 +450,12 @@ tr.diffs_avbl
 {
     padding-top: 0;
 }
+
+#diffs .ln
+{
+    font-size: 0.7em;
+    color: #444444;
+    min-width: 1.5em;
+    margin-right: 0.5em;
+    float: left;
+}
