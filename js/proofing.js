@@ -527,11 +527,18 @@ function proofreader() {
         $('#diffs').empty();
       }
       else {
-        $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id});
-        $('#diffs').css('display', 'block');
+        $('#diffs').css('display', 'none');
+        $("#diffs").accordion("destroy");
+        $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id}, diffload_callback);
       }
     }
 
+    function diffload_callback(ob, status) {
+      if($("#diffs h3").length) {
+            $("#diffs").accordion({autoHeight: false, collapsible: true});
+      }
+      $('#diffs').css('display', 'block');
+    }
 
     function get_page(proj_id, _page_id) {
       page_id = _page_id;
@@ -550,8 +557,9 @@ function proofreader() {
     function submit_callback(ob, status) {
       if(ob == "OK") {
         text_container.set_clean();
-        $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id});
-        $('#diffs').css('display', 'block');
+        $('#diffs').css('display', 'none');
+        $("#diffs").accordion("destroy");
+        $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id}, diffload_callback);
       }
       else {
         $("status").text("Save failed");

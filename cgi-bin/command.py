@@ -10,6 +10,7 @@ import xml.etree.cElementTree as et
 import project_data
 import re
 import difflib
+import ghdiff
 
 data_path = "../data/"
 
@@ -132,17 +133,14 @@ class CommandProcessor:
                 outstr += "<p>%s identical versions</p>" % len(proofers)
             else:
                 alt_versions = [X for X in rev_index.keys() if X != user_key]
-                diff = difflib.HtmlDiff(wrapcolumn=40)
                 left_user = rev_index[user_key][0]
                 left_text = unicode(data.get_text(pageid, left_user)[0], "utf8")
                 for v in alt_versions:
                     right_user = rev_index[v][0]
                     right_text = unicode(data.get_text(pageid, right_user)[0], "utf8")
-                    outstr += diff.make_table(left_text.splitlines(),
-                                              right_text.splitlines(),
-                                              ", ".join(rev_index[user_key]).replace(self.task + "/", ""),
-                                              ", ".join(rev_index[v]).replace(self.task + "/", ""),
-                                              True, 1)
+                    outstr += "".join(ghdiff.diff(left_text, right_text,
+                                                  ", ".join(rev_index[user_key]).replace(self.task + "/", ""),
+                                                  ", ".join(rev_index[v]).replace(self.task + "/", ""), 1))
         else:
             outstr += "<p>Only version.</p>"
         sys.stdout.write(outstr.encode("utf8"))
