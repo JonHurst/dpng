@@ -189,7 +189,7 @@ function proofreader() {
       //remove 'current' class from span and line whenever line is changed
       if(num != current_line) {
         current_token = -1;
-        $('div.current_line span').removeClass("current");
+        $('div.current_line span.current').removeClass("current");
         $("div.current_line").removeClass("current_line");
       }
       current_line = num;
@@ -215,7 +215,7 @@ function proofreader() {
       var token_count = $('div.current_line span').length;
       if(current_line == num_lines - 1 && current_token >= token_count - 1)
         return;//We're on the last token of the page, so do nothing
-      $('div.current_line span').removeClass("current");
+      $('div.current_line span.current').removeClass("current");
       current_token++;
       if(current_token == token_count) {
         next();
@@ -229,7 +229,7 @@ function proofreader() {
     function prev_token() {
       if(current_line == 0 && current_token == 0)
         return;//We're on the first token of the page, so do nothing
-      $('div.current_line span').removeClass("current");
+      $('div.current_line span.current').removeClass("current");
       var token_count = $('div.current_line span').length;
       if(current_token == -1)
         current_token = token_count;
