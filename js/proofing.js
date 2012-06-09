@@ -31,20 +31,37 @@ function proofreader() {
 
 
   //set up jQuery ui
+  var ui_width = 800;
+  if(localStorage && localStorage["ui_width"]) {
+    ui_width = localStorage["ui_width"];
+    $("#spacer, #title_bar, #image_container, #text_container, #control_bar, #editor, #diffs").width(ui_width);
+  }
+
+
   function slide(event, ui) {
     $("#spacer, #title_bar, #image_container, #text_container, #control_bar, #editor, #diffs").width(ui.value);
       image_container.select();
       text_container.select();
   }
 
-  $("#slider").slider({ value: 800,
+  $("#slider").slider({ value: ui_width,
                         min: 400,
                         max: 1500,
                         step: 25,
-                        slide: slide});
+                        slide: slide,
+                        stop: function(event, ui) {
+                          if(localStorage)
+                              localStorage["ui_width"] = ui.value;}});
 
-  $("#image_container, #text_container").resizable({handles: "s", minHeight: 100});
-  $("#spacer").resizable({handles: "s", minHeight: 16});
+  $("#spacer").resizable({handles: "s",
+                          minHeight: 16,
+                          stop: function(event, ui) {
+                            if(localStorage)
+                              localStorage["spacer_height"] =
+                                ui.size.height;}});
+  if(localStorage && localStorage["spacer_height"]) {
+    $("#spacer").height(localStorage["spacer_height"]); }
+
   $("#change_page, #submit, #reserve, #close_editor").button();
   $("#close_interface").button({icons:{primary: "ui-icon-closethick"}, text:false});
   $("#tabs").tabs();
@@ -62,6 +79,18 @@ function proofreader() {
     var max_line =  0;
     var line_positions;
     var loaded_images;
+
+    $("#image_container").resizable({handles: "s",
+                                    minHeight: 100,
+                                    stop:
+                                    function(event, ui) {
+                                      if(localStorage)
+                                        localStorage["image_container_height"] =
+                                          ui.size.height;
+                                      select();
+                                      }});
+    if(localStorage && localStorage["image_container_height"]) {
+      $("#image_container").height(localStorage["image_container_height"]); }
 
 
     function load_image(url, pos) {
@@ -159,6 +188,19 @@ function proofreader() {
     var validation_sn = 0;
     var validator = "";
     var is_baseline = true;
+
+    $("#text_container").resizable({handles: "s",
+                                    minHeight: 100,
+                                    stop:
+                                    function(event, ui) {
+                                      if(localStorage)
+                                        localStorage["text_container_height"] =
+                                          ui.size.height;
+                                      select();
+                                      }});
+    if(localStorage && localStorage["text_container_height"]) {
+      $("#text_container").height(localStorage["text_container_height"]); }
+
 
     function init(text, _goodwords, _validator, _is_baseline) {
       goodwords = _goodwords || "";
