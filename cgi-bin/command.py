@@ -135,12 +135,16 @@ class CommandProcessor:
                 alt_versions = [X for X in rev_index.keys() if X != user_key]
                 left_user = rev_index[user_key][0]
                 left_text = unicode(data.get_text(pageid, left_user)[0], "utf8")
+                left_user_string = ", ".join(rev_index[user_key]).replace(self.task + "/", "")
+                if len(left_user_string) > 20: left_user_string = left_user_string[:20] + "..."
                 for v in alt_versions:
                     right_user = rev_index[v][0]
                     right_text = unicode(data.get_text(pageid, right_user)[0], "utf8")
+                    right_user_string = ", ".join(rev_index[v]).replace(self.task + "/", "")
+                    if len(right_user_string) > 20: right_user_string = right_user_string[:20] + "..."
                     outstr += "".join(ghdiff.diff(left_text, right_text,
-                                                  ", ".join(rev_index[user_key]).replace(self.task + "/", ""),
-                                                  ", ".join(rev_index[v]).replace(self.task + "/", ""), 1))
+                                                  left_user_string,
+                                                  right_user_string, 1))
         else:
             outstr += "<p>Only version</p>"
         sys.stdout.write(outstr.encode("utf8"))
