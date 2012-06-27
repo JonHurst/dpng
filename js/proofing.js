@@ -160,7 +160,7 @@ function proofreader() {
         select(c - 1);
       }
     }
-    $('#image_container').click(click);
+    // $('#image_container').click(click);
 
     function move(offset) {select(current_line + offset);}
     function next () {move(1);}
@@ -468,7 +468,7 @@ function proofreader() {
         image_container.move(offset);
       }
     }
-    $('#text_container').click(click);
+    // $('#text_container').click(click);
 
 
     function undo() {

@@ -345,10 +345,10 @@ span.digit
     font-size: 0.8em;
 }
 
-div.current_line span
-{
-    cursor: pointer;
-}
+/* div.current_line span */
+/* { */
+/*     cursor: pointer; */
+/* } */
 
 #status
 {
