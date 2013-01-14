@@ -103,7 +103,7 @@ jQuery(
         line_positions.push(line);});
       line_positions.sort(function(a, b) {return a - b; });
       var json_lines = JSON.stringify(line_positions);
-      jQuery.post(cgi_path + "command.py", {verb:"save", task: "lines", lines:json_lines,
+      jQuery.post(ajax_interface, {verb:"save", task: "lines", lines:json_lines,
                                             projid: projid, pageid: pageid}, submit_callback);
     }
     $('#submit').click(on_submit_click);
