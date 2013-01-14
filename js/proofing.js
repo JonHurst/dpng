@@ -400,7 +400,7 @@ function proofreader() {
         local_validate(text);
         if(text.length > 0) {
           jQuery.get(validator,
-                     {text: text, serial: ++validation_sn, goodwords: goodwords},
+                     {projid: projid, page_id: page_id, text: text, serial: ++validation_sn, goodwords: goodwords},
                      validator_callback, "html");
         }
       }
