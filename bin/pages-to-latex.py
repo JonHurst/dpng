@@ -20,7 +20,10 @@ latex_escape_table = [
     ("'\"", r"'\,"),
     ("\"'", "\"\\,'"),
     ("Mr. ", r"Mr.\ "),
-    ("Mrs. ", r"Mrs.\ ")]
+    ("Mrs. ", r"Mrs.\ "),
+    ("\{\{", "\emph{"),
+    ("\}\}", "}")
+    ]
 
 
 def text_to_latex(text):
