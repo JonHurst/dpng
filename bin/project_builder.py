@@ -90,6 +90,12 @@ class ProjectBuilder:
         data.save() #also unlocks
 
 
+    def set_validator(self, validator):
+        data = project_data.ProjectData(self.project_file, True)
+        data.set_meta("validator", validator)
+        data.save() #also unlocks
+
+
     def dump(self):
         data = project_data.ProjectData(self.project_file)
         data.dump(self.options.processed)
@@ -97,7 +103,7 @@ class ProjectBuilder:
 
 
 def main():
-    usage = "usage: %prog [build|lines|goodwords|images|dump] [options]"
+    usage = "usage: %prog [build|lines|goodwords|setval|images|dump] [options]"
     parser = optparse.OptionParser(usage=usage)
     parser.add_option("-e", "--encoding", dest="encoding",
                       help="The encoding of the source text files")
@@ -126,6 +132,8 @@ def main():
         pb.dump()
     elif command == "goodwords":
         pb.add_goodwords()
+    elif command == "setval":
+        pb.set_validator(args[1])
     else:
         parser.print_help()
 
