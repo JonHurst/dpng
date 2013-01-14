@@ -197,9 +197,37 @@ span.punc
     background-color: #A8FFA8;
 }
 
+span.nomatch
+{
+    border-bottom:2px solid red;
+}
+
+span.end_match
+{
+    border-right: 1px solid green;
+    background-image: -webkit-linear-gradient(right, green, #A0FFA0 0.25em, #F0FFF0 0.75em, transparent 0.75em);
+    background-image: linear-gradient(to left, green, #A0FFA0 0.25em, #F0FFF0 0.75em, transparent 0.75em);
+}
+
+span.start_match
+{
+    border-left: 1px solid green;
+    background-image: -webkit-linear-gradient(left, green, #A0FFA0 0.25em, #F0FFF0 0.75em, transparent 0.75em);
+    background-image: linear-gradient(to right, green, #A0FFA0 0.25em, #F0FFF0 0.75em, transparent 0.75em);
+}
+
+
 #text_container.nohl span.punc
 {
     background-color: transparent;
+}
+
+#text_container span.start_match.end_match
+{
+    background-color: #C0FFC0;
+    background-image: none;
+    border-left: 2px solid green;
+    border-right: 2px solid green;
 }
 
 span.stealth
