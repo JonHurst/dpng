@@ -42,3 +42,9 @@
 {
     width: 100%;
 }
+
+#drop_last, #drop_first
+{
+    width:49%;
+    margin-bottom:2px;
+}

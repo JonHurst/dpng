@@ -89,6 +89,38 @@ jQuery(
     $('#image_container').click(on_imagecontainer_click);
 
 
+      function on_drop_first(ev) {
+          var first;
+          var min_pos = Number.MAX_VALUE;
+          var line_divs = $('.linehere');
+          for(var c = 0; c < line_divs.length; c++) {
+              var pos = $(line_divs[c]).position();
+              if(pos.top < min_pos) {
+                  min_pos = pos.top;
+                  first = c;
+              }
+          }
+          $(line_divs[first]).remove();
+      }
+      $('#drop_first').click(on_drop_first);
+
+
+      function on_drop_last(ev) {
+          var last = 0;
+          var max_pos = 0;
+          var line_divs = $('.linehere');
+          for(var c = 0; c < line_divs.length; c++) {
+              var pos = $(line_divs[c]).position();
+              if(pos.top > max_pos) {
+                  max_pos = pos.top;
+                  last = c;
+              }
+          }
+          $(line_divs[last]).remove();
+      }
+      $('#drop_last').click(on_drop_last);
+
+
     function on_submit_click(event) {
       var line_positions = [];
       $("div.linehere").each(function(index, element) {
