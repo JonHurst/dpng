@@ -25,7 +25,9 @@ def main():
         l = pd.get_lines(pageid)
         p = rtt_pages_dict[pageid]
         i = p.find("image")
-        le = et.SubElement(i, "lines")
+        le = i.find("lines")
+        if le == None:
+            le = et.SubElement(i, "lines")
         le.text = ",".join([str(X) for X in l[project_data.DATA]])
     rtt.write(sys.stdout, encoding="utf-8", xml_declaration=True)
 
