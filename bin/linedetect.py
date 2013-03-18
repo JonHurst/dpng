@@ -6,7 +6,7 @@ import scanner
 
 def process_image(img, sample_fraction):
     pure_white_threshold = 0.95 #pure white is excluded from centile calculation
-    white_threshold_factor = 0.7
+    white_threshold_factor = 0.8
     black_threshold_factor = 0.5
     min_line_size = 6
     rows = scanner.process_image(img, sample_fraction)
