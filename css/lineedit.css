@@ -9,28 +9,32 @@
     position:absolute;
     top: 0;
     left: 0;
-    width:15em;
+    width:14em;
+    height: 99vh;
+    overflow:scroll;
 }
 
 #image_container
 {
     position: relative;
+    display:inline-block;
     margin-left: 15em;
-    width: 550px;
+    height: 99vh;
+    max-width: calc(99% - 15em);
 }
 
 #image
 {
     cursor: crosshair;
-    width: 550px;
     border: 1px blue dotted;
+    max-height: 100%;
 }
 
 .linehere
 {
     position: absolute;
     height: 6px;
-    width: 100%;
+    width: calc(100% - 2px);
     border: red 1px solid;
     background-color: red;
     opacity: 0.2;
