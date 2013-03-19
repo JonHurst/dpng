@@ -1,44 +1,38 @@
-#!/usr/bin/python2.7
-from __future__ import print_function
+#!/usr/bin/python3
 
 import argparse
 import os
 import sys
 import xml.etree.ElementTree as et
 import xml.etree.ElementInclude as ei
-import project_data
+import project
 
 
 def create_project(project_dir, rtt_file):
-    project_file = project_dir + "/project"
-    data = project_data.ProjectData(project_file, True)
     rtt = et.parse(rtt_file).getroot()
     ei.include(rtt)
+    data = project.ProjectData(project_dir)
     process_metadata(rtt, data)
     process_pages(rtt, data, project_dir)
-    data.save() #also unlocks
-    os.chmod(project_file, 0660)
+    data.save()
+    data.unlock()
 
 
 def process_metadata(rtt, data):
-    data.set_meta("title", rtt.find("title").text)
+    data.meta["title"] = rtt.find("title").text
 
 
 def process_pages(rtt, data, project_dir):
     pages = rtt.findall("pages/page")
-    images = []
-    for p in pages:
-        page_image = p.find("image").attrib["src"]
-        proj_image = os.path.join(project_dir, os.path.basename(page_image))
-        if not os.path.exists(proj_image):
-            os.link(page_image, proj_image)
-            os.chmod(proj_image, 0640)
-        images.append(os.path.basename(proj_image))
-    for p, pi, i, ni in zip(pages, [None] + images[:-1], images, images[1:] + [None]):
-        data.add_page(p.attrib["id"], p.find("text").text.encode("utf-8"), [pi, i, ni])
-        lines = p.find("image/lines")
+    idents = [p.attrib["id"] for p in pages]
+    data.first_page = idents[0]
+    for page, ident, prev_ident, next_ident in zip(pages, idents, [None] + idents[:-1], idents[1:] + [None]):
+        proj_page = data.add_page(ident, prev_ident, next_ident)
+        proj_page.add_image(os.path.abspath(page.find("image").attrib["src"]))
+        proj_page.add_itext(page.find("text").text)
+        lines = page.find("image/lines")
         if lines != None:
-            data.set_lines(p.attrib["id"], [int(X) for X in lines.text.split(",")])
+            proj_page.image_lines = [int(X) for X in lines.text.split(",")]
 
 
 def main():
