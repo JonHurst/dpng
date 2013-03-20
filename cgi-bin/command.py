@@ -35,6 +35,7 @@ class CommandProcessor:
             "list": self.list
             }
         self.rw_func_map = {
+            "reserve": self.reserve
             }
 
 
@@ -45,8 +46,10 @@ class CommandProcessor:
             self.data = project.ProjectData(self.project_dir, True)
             self.data.unlock() #unlock immediately for read only cases
             self.ro_func_map[verb]()
-        elif verb in rw_func_map:
-            pass
+        elif verb in self.rw_func_map:
+            self.data = project.ProjectData(self.project_dir)
+            self.rw_func_map[verb]()
+            self.data.unlock() #unlock after function call for write cases
         else:
             raise CommandException(CommandException.UNKNOWNVERB)
 
@@ -105,17 +108,37 @@ class CommandProcessor:
 
 
     def list(self):
-        def all_p(): return True
-        pageid = self.form.getfirst("pageid")
-        if not pageid: raise CommandException(CommandException.NOPAGEID)
-        pf = all_p
+        reserved, submitted_diffs, submitted_nodiffs = [], [], []
         ident = self.data.first_page
-        page_list = []
         while ident != None:
-            if pf(): page_list.append(ident)
+            if self.user in self.data.pages[ident].otext_filenames:
+                ts = self.data.pages[ident].otext_timestamps.get(self.user)
+                if ts:
+                    ts = ts.ctime()
+                else:
+                    ts = ""
+                if self.data.pages[ident].otext_filenames[self.user] == None:
+                    reserved.append((ident, ts))
+                else:
+                    submitted_nodiffs.append((ident, ts))
             ident = self.data.pages[ident].next_ident
         print("Content-type: text/json; charset=UTF-8\n")
-        json.dump(page_list, sys.stdout)
+        json.dump((reserved, submitted_diffs, submitted_nodiffs), sys.stdout)
+
+
+    def reserve(self):
+        ident = self.data.first_page
+        while ident != None:
+            if len(self.data.pages[ident].otext_filenames) == 0:
+                self.data.pages[ident].add_otext(None, self.user)
+                self.data.save()
+                break
+            ident = self.data.pages[ident].next_ident
+        retval = "OK"
+        if ident == None:
+            retval = "COMPLETE"
+        print("Content-type: text/json; charset=UTF-8\n")
+        json.dump(retval, sys.stdout)
 
 
 class CommandException(Exception):
@@ -142,8 +165,7 @@ class FakeForm:
     def getfirst(self, value):
         values = {
             "projid": "test",
-            "verb": "get_lines",
-            "pageid": "001"
+            "verb": "list"
             }
         return values.get(value)
 #
