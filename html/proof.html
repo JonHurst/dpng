@@ -60,15 +60,19 @@
     <div id="pagepicker" title="Pages">
       <div id="tabs">
         <ul>
-          <li><a href="#res_tab">Reserved</a></li>
-          <li><a href="#done_tab">Done</a></li>
+          <li><a id="res_tab_hdg" href="#res_tab">Reserved</a></li>
+          <li><a id="diffs_tab_hdg" href="#diffs_tab">Diffs</a></li>
+          <li><a id="done_tab_hdg" href="#done_tab">Done</a></li>
         </ul>
         <div id="res_tab">
           <button id="reserve">Reserve Page</button>
-          <div id="res"></div>
+          <div id="res_list"></div>
+        </div>
+        <div id="diffs_tab">
+          <div id="diff_list"></div>
         </div>
         <div id="done_tab">
-          <div id="done"></div>
+          <div id="done_list"></div>
         </div>
       </div>
     </div>
