@@ -5,7 +5,6 @@ function proofreader() {
 
   var ajax_interface = "../cgi-bin/command.py";
   var projid = "";
-  var task = "proof";
   var page_id = "";
 
   //extract projid and task from URL
@@ -74,7 +73,6 @@ function proofreader() {
     var current_line;
     var max_line =  0;
     var line_positions;
-    var loaded_images;
 
     $("#image_container").resizable({handles: "s",
                                     minHeight: 100,
@@ -89,8 +87,13 @@ function proofreader() {
       $("#image_container").height(localStorage["image_container_height"]); }
 
 
-    function load_image(url, pos) {
-      url = url || "../images/blank.png";
+    function load_image(page, pos) {
+        var url = "../images/blank.png";
+        if(page) {
+            url = ajax_interface + "?" + jQuery.param({verb: "get_image",
+                                                       projid: projid,
+                                                       pageid: page});
+        }
       var img = $("<img />").attr({'src': url, 'alt': pos});
       if (img.get(0).complete || img.get(0).readyState === 4) {
         image_load_handler({currentTarget: img.get(0)});
@@ -109,15 +112,22 @@ function proofreader() {
     }
 
 
-    function init(_images, _line_positions) {
-      line_positions = _line_positions.length ? _line_positions : [1000];
-      max_line = line_positions.length;
-      loaded_images = 0;
-      current_line = 0;
-      $('#image_container').addClass('wait');
-      load_image(_images[1], 1);
-      load_image(_images[0], 0);
-      load_image(_images[2], 2);
+    function init() {
+      line_positions =  [1000];
+      jQuery.getJSON(ajax_interface, 
+                     {projid:projid, pageid:page_id, verb:"get_lines"},
+                     function(ob) {
+                       if(ob) line_positions = ob;
+                       max_line = line_positions.length;
+                       current_line = 0;
+                       select();});
+      load_image(page_id, 1);
+      jQuery.getJSON(ajax_interface, 
+                     {projid:projid, pageid:page_id, verb:"get_prev"},
+                    function(ob) {load_image(ob, 0);});
+      jQuery.getJSON(ajax_interface, 
+                     {projid:projid, pageid:page_id, verb:"get_next"},
+                    function(ob) {load_image(ob, 2);});
     }
 
 
@@ -141,22 +151,6 @@ function proofreader() {
       $("#images").scrollTop(scroll_top);
       return offset;
     }
-
-
-    function click(event) {
-      if(event.target.tagName == "IMG") {
-        event.offsetY= event.offsetY || event.pageY  - $(event.target).offset().top;
-        var line_index = event.offsetY * 10000 / $(event.target).height();
-        var line_diff = 10000;//Math.abs(line_positions[c] - line_index);
-        for(var c = 0; c < line_positions.length; c++) {
-          var new_line_diff = Math.abs(line_positions[c] - line_index);
-          if(new_line_diff > line_diff) break;
-          line_diff = new_line_diff;
-        }
-        select(c - 1);
-      }
-    }
-    // $('#image_container').click(click);
 
     function move(offset) {select(current_line + offset);}
     function next () {move(1);}
@@ -578,9 +572,9 @@ function proofreader() {
       $('#diffs').css('display', 'block');
     }
 
-    function get_page(proj_id, _page_id) {
-      page_id = _page_id;
-      jQuery.getJSON(ajax_interface, { verb:"get", task: task, projid: proj_id, pageid: page_id}, page_callback);
+    function change_page(page) {
+      page_id = page;
+      image_container.init();
     }
 
 
@@ -628,7 +622,7 @@ function proofreader() {
 
 
     return {
-      get_page: get_page,
+      change_page: change_page,
       submit: submit,
       list: list,
       reserve: reserve
@@ -786,8 +780,8 @@ function proofreader() {
       event.preventDefault();
       var href = $(event.target).attr('href');
       if(href) {
-        $('#pagepicker').dialog('close');
-        command.get_page(projid, href);
+          $('#pagepicker').dialog('close');
+          command.change_page(href);
       }
     }
     $('#pagepicker').click(click);
@@ -827,7 +821,7 @@ function proofreader() {
       $('#res_list').replaceWith($("<div id='res_list'/>").append(build_table(ob[0])));
       $('#diff_list').replaceWith($("<div id='diff_list'/>").append(build_table(ob[1])));
       $('#done_list').replaceWith($("<div id='done_list'/>").append(build_table(ob[2])));
-      // if(list_type == "res") $('#res a:first').focus();
+      $('#res_list a:first').focus();
     }
 
 
