@@ -17,17 +17,14 @@ function proofreader() {
     if(name == "projid")  {
       projid = decodeURIComponent(url_param_strings[c].substring(pos + 1));
     }
-    else if(name == "task") {
-      task = decodeURIComponent(url_param_strings[c].substring(pos + 1));
-    }
   }
 
   //insert title and guidelines link
   function init_callback(ob, status) {
-    $('#title').text(ob[0]);
-    $("#project_link").attr("href", ob[1]);
+    $('#title').text(ob["title"]);
+    $("#project_link").attr("href", "test.html");
   }
-  jQuery.getJSON(ajax_interface, { verb:"get", task: "init", projid: projid}, init_callback);
+  jQuery.getJSON(ajax_interface, { verb:"get_meta", projid: projid}, init_callback);
 
 
   //set up jQuery ui
