@@ -61,7 +61,6 @@ function proofreader() {
 
   $("#change_page, #submit, #reserve, #close_editor").button();
   $("#close_interface").button({icons:{primary: "ui-icon-closethick"}, text:false});
-  $("#tabs").tabs();
 
   //open all menu_bar links in new windows
   $('#menu_bar > a').click(function(event) {
@@ -613,7 +612,7 @@ function proofreader() {
 
     function reserve(proj_id) {
       jQuery.post(ajax_interface,
-                  {verb:"reserve", task:task, projid: proj_id}, reserve_callback);
+                  {verb:"reserve", projid: proj_id}, reserve_callback);
     }
 
 
@@ -768,6 +767,8 @@ function proofreader() {
 
   function pagepicker_func() {
 
+    $("#tabs").tabs();
+
     $("#pagepicker").dialog(
       {autoOpen: false,
        modal:true,
@@ -794,9 +795,7 @@ function proofreader() {
 
     function refresh() {
       jQuery.getJSON(ajax_interface,
-        {verb:"list", task: task, type: "res", projid: projid}, list_callback);
-      jQuery.getJSON(ajax_interface,
-        {verb:"list", task: task, type: "done", projid: projid}, list_callback);
+        {verb:"list",  projid: projid}, list_callback);
     }
 
 
@@ -812,24 +811,23 @@ function proofreader() {
     }
 
 
-    function list_callback(ob, status) {
-      var list_type = ob[0];
-      var listing = ob[1];
-      var content;
-      if(listing.length > 0) {
-        content = ($("<table/>"));
+    function build_table(listing) {
+        var content = ($("<table/>"));
         for(var c = 0; c < listing.length; c++) {
-          var class_string = "";
-          if(listing[c][2])
-            class_string = " class='diffs_avbl'";
-          content.append($("<tr" + class_string + "><td><a href='" +
-                           listing[c][0] + "'>" +
-                           listing[c][0] + "</a></td><td>" +
-                           listing[c][1] + "</td></tr>"));
+            content.append($("<tr><td><a href='" +
+                             listing[c][0] + "'>" +
+                             listing[c][0] + "</a></td><td>" +
+                             listing[c][1] + "</td></tr>"));
         }
-      }
-      $('#' + list_type).replaceWith($("<div id='" + list_type + "'/>").append(content));
-      if(list_type == "res") $('#res a:first').focus();
+        return content;
+    }
+
+
+    function list_callback(ob, status) {
+      $('#res_list').replaceWith($("<div id='res_list'/>").append(build_table(ob[0])));
+      $('#diff_list').replaceWith($("<div id='diff_list'/>").append(build_table(ob[1])));
+      $('#done_list').replaceWith($("<div id='done_list'/>").append(build_table(ob[2])));
+      // if(list_type == "res") $('#res a:first').focus();
     }
 
 
