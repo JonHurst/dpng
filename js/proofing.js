@@ -796,7 +796,6 @@ function proofreader() {
 
     function refresh() {
       listing_sn++;
-      console.log(listing_sn);
       function callback_factory(_listing_sn) {
         return function(ob, status) {
           if(_listing_sn == listing_sn) {
