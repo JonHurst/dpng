@@ -583,7 +583,7 @@ function proofreader() {
       image_container.init();
     }
 
-
+    
     function submit(proj_id) {
       if(!page_id) return;
       jQuery.post(ajax_interface,
@@ -767,8 +767,8 @@ function proofreader() {
 
   function pagepicker_func() {
 
+    var listing_sn = 0;
     $("#tabs").tabs();
-
     $("#pagepicker").dialog(
       {autoOpen: false,
        modal:true,
@@ -794,8 +794,20 @@ function proofreader() {
 
 
     function refresh() {
+      listing_sn++;
+      console.log(listing_sn);
+      function callback_factory(_listing_sn) {
+        return function(ob, status) {
+          if(_listing_sn == listing_sn) {
+            $('#res_list').replaceWith($("<div id='res_list'/>").append(build_table(ob[0])));
+            $('#diff_list').replaceWith($("<div id='diff_list'/>").append(build_table(ob[1])));
+            $('#done_list').replaceWith($("<div id='done_list'/>").append(build_table(ob[2])));
+            $('#res_list a:first').focus();
+          }
+        };
+      }
       jQuery.getJSON(ajax_interface,
-        {verb:"list",  projid: projid}, list_callback);
+        {verb:"list",  projid: projid}, callback_factory(listing_sn));
     }
 
 
@@ -821,15 +833,6 @@ function proofreader() {
         }
         return content;
     }
-
-
-    function list_callback(ob, status) {
-      $('#res_list').replaceWith($("<div id='res_list'/>").append(build_table(ob[0])));
-      $('#diff_list').replaceWith($("<div id='diff_list'/>").append(build_table(ob[1])));
-      $('#done_list').replaceWith($("<div id='done_list'/>").append(build_table(ob[2])));
-      $('#res_list a:first').focus();
-    }
-
 
     return {
       show: show,
