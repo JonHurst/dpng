@@ -6,6 +6,7 @@ import sys
 import xml.etree.ElementTree as et
 import xml.etree.ElementInclude as ei
 import project
+import stat
 
 
 def create_project(project_dir, rtt_file):
@@ -16,6 +17,9 @@ def create_project(project_dir, rtt_file):
     process_pages(rtt, data, project_dir)
     data.save()
     data.unlock()
+    os.chmod(project_dir, 0o770 | stat.S_ISGID)
+    os.chmod(project_dir + "/.lock", 0o660)
+    os.chmod(project_dir + "/.project", 0o660)
 
 
 def process_metadata(rtt, data):

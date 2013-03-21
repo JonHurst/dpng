@@ -13,7 +13,8 @@ class ProjectData:
 
     def __init__(self, project_dir, readonly=False):
         self.lock = fcntl.LOCK_SH if readonly else fcntl.LOCK_EX
-        self.lf = open(project_dir + "/.lock", "wb+")
+        lockfile = project_dir + "/.lock"
+        self.lf = open(lockfile, "wb+")
         fcntl.lockf(self.lf, self.lock)
         self.project_dir = project_dir
         self._pickle_filename = project_dir + "/.project"
@@ -40,9 +41,10 @@ class ProjectData:
 
     def save(self):
         assert self.lock == fcntl.LOCK_EX
-        pickle_file = open(self._pickle_filename, "wb")
+        pickle_file = open(self._pickle_filename + ".tmp", "wb")
         pickle.dump((self.meta, self.first_page, self.pages), pickle_file)
         pickle_file.close()
+        os.rename(self._pickle_filename + ".tmp", self._pickle_filename)#rename is a POSIX atomic operation
 
 
     def dump(self):
@@ -79,7 +81,7 @@ class Page:
         proj_image = os.path.join(self.base_dir, os.path.basename(image_filename))
         if not os.path.exists(proj_image):
             os.link(image_filename, proj_image)#hard link is a POSIX atomic operation
-            os.chmod(proj_image, 0o640)
+            os.chmod(proj_image, 0o644)
         self.image_filename = os.path.basename(proj_image)
 
 
