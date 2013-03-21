@@ -21,7 +21,10 @@ function proofreader() {
   //insert title and guidelines link
   function init_callback(ob, status) {
     $('#title').text(ob["title"]);
-    $("#project_link").attr("href", "test.html");
+    if(ob["project_link"])
+      $("#project_link").attr("href", ob["project_link"]);
+    else
+      $("#project_link").remove();
   }
   jQuery.getJSON(ajax_interface, { verb:"get_meta", projid: projid}, init_callback);
 
