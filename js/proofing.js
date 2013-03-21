@@ -558,7 +558,7 @@ function proofreader() {
     function submit(proj_id) {
       if(!page_id) return;
       jQuery.post(ajax_interface,
-                  {verb:"save", task:task, projid: proj_id, pageid: page_id, text:text_container.get_text()},
+                  {verb:"save", projid: proj_id, pageid: page_id, text:text_container.get_text()},
                   submit_callback);
     }
 
@@ -568,7 +568,7 @@ function proofreader() {
         text_container.set_clean();
         $('#diffs').css('display', 'none');
         $("#diffs").accordion("destroy");
-        $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id}, diffload_callback);
+        // $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id}, diffload_callback);
       }
       else {
         $("status").text("Save failed");

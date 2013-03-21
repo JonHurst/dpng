@@ -35,7 +35,8 @@ class CommandProcessor:
             "list": self.list
             }
         self.rw_func_map = {
-            "reserve": self.reserve
+            "reserve": self.reserve,
+            "save": self.save
             }
 
 
@@ -141,6 +142,18 @@ class CommandProcessor:
         json.dump(retval, sys.stdout)
 
 
+    def save(self):
+        retval = "OK"
+        pageid = self.form.getfirst("pageid")
+        if not pageid: raise CommandException(CommandException.NOPAGEID)
+        text = self.form.getfirst("text")
+        if len(text) > 10000: raise CommandException(CommandException.TOOLARGETEXT)
+        self.data.pages[pageid].add_otext(text, self.user)
+        self.data.save()
+        print("Content-type: text/json; charset=UTF-8\n")
+        json.dump(retval, sys.stdout)
+
+
 class CommandException(Exception):
     (UNKNOWN, NOVERB, UNKNOWNVERB, NOPROJID, NOPAGEID,
      TOOLARGETEXT, BADPAGEID, BADPROJID) = range(8)
@@ -165,7 +178,9 @@ class FakeForm:
     def getfirst(self, value):
         values = {
             "projid": "test",
-            "verb": "list"
+            "verb": "save",
+            "pageid": "001",
+            "text": "Test text"
             }
         return values.get(value)
 #

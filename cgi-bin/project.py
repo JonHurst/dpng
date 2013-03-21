@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import sys
 import hashlib
 import random
 import datetime
@@ -53,6 +54,9 @@ class ProjectData:
             page = self.pages[ident]
             print("  ", "image:", page.image_filename)
             print("  ", "itext:", page.itext_filename)
+            print("  ", "otext:")
+            for u in sorted(page.otext_filenames):
+                print("    ", u, page.otext_filenames[u])
             if page.image_lines != None:
                 print("  ", "lines", page.image_lines)
             ident = page.next_ident
@@ -112,3 +116,9 @@ class Page:
             os.rename(temp_target, target_file)#rename is a POSIX atomic operation
             os.chmod(target_file, 0o640)
         return h
+
+
+if __name__ == "__main__":
+    p = ProjectData(sys.argv[1])
+    p.unlock()
+    p.dump()
