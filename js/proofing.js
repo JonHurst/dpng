@@ -92,20 +92,18 @@ function proofreader() {
                                                    pageid: page});
       }
       var img = $("<img />").attr({'src': url, 'alt': pos});
+      function image_load_handler(event) {
+        var target = event.currentTarget;
+        var pos = target.getAttribute('alt');
+        $('#image_container img').eq(pos).replaceWith(target);
+        select();
+      }
       if (img.get(0).complete || img.get(0).readyState === 4) {
         image_load_handler({currentTarget: img.get(0)});
       }
       else {
         img.load(image_load_handler);
       }
-    }
-
-
-    function image_load_handler(event) {
-      var target = event.currentTarget;
-      var pos = target.getAttribute('alt');
-      $('#image_container img').eq(pos).replaceWith(target);
-      select();
     }
 
 
