@@ -589,11 +589,8 @@ function proofreader() {
 
     function reserve_callback(ob, status) {
       page_picker.refresh();
-      if(ob == "NONE_AVAILABLE") {
-        alert("Task \"" + task + "\" has no further pages available to reserve at this time. Please try later.");
-      }
-      else if(ob == "COMPLETE") {
-        alert("Task \"" + task + "\" is complete.");
+      if(ob == "COMPLETE") {
+        alert("Proofing complete.");
       }
     }
 
@@ -749,6 +746,7 @@ function proofreader() {
 
     function reserve() {
       command.reserve(projid);
+      $('#reserve').button("disable");
     }
     $('#reserve').click(reserve);
 
@@ -776,6 +774,7 @@ function proofreader() {
             $('#done_list').replaceWith($("<div id='done_list'/>").append(build_table(ob[2])));
             $('#done_tab_hdg').text("Done (" + ob[2].length + ")");
             $('#res_list a:first').focus();
+            $('#reserve').button("enable");
           }
         };
       }
