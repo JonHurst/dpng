@@ -200,31 +200,31 @@ function proofreader() {
 
 
     function init() {
-      function gettext_callback_factory(_page_id) {
-        return function(ob) {
-          if(page_id == _page_id) {
-            var localStorageID = projid + "/" + page_id;
-            text_history = [];
-            if(localStorage && localStorage[localStorageID]) {
-              text_history = JSON.parse(localStorage[localStorageID]);
-              if(ob != text_history[0])
-                text_history = [];
-            }
-            if(text_history.length) refresh();
-            else change_text(ob);
-          }
-        };
-      }
-      jQuery.getJSON(
-        ajax_interface, { verb:"get_meta", projid: projid},
-        function(ob) {
-          goodwords = ob.goodwords || "";
-          validator = ob.validator || "../cgi-bin/proofing_validator.py";
+      var jqxhr_text = jQuery.get(ajax_interface, {projid:projid, pageid:page_id, verb:"get_text"});
+      var jqxhr_meta =jQuery.getJSON(ajax_interface, { verb:"get_meta", projid: projid});
+      var jqxhr_status = jQuery.get(ajax_interface, {projid:projid, pageid:page_id, verb:"status"});
+      function init_callback_factory(_page_id) {
+        return function(a_text, a_meta, a_status) {
+          if(_page_id != page_id) return;
+          goodwords = a_meta[0].goodwords || "";
+          validator = a_meta[0].validator || "../cgi-bin/proofing_validator.py";
           current_line = 0;
           current_token = -1;
-          jQuery.get(ajax_interface, {projid:projid, pageid:page_id, verb:"get_text"},
-                     gettext_callback_factory(page_id));
-        });
+          is_baseline = true;
+          if(a_status[0] == "submitted") is_baseline = false;
+          var localStorageID = projid + "/" + page_id;
+          text_history = [];
+          if(localStorage && localStorage[localStorageID]) {
+            text_history = JSON.parse(localStorage[localStorageID]);
+            if(a_text[0] != text_history[0])
+              text_history = [];
+          }
+          if(text_history.length) refresh();
+          else change_text(a_text[0]);
+        };
+      }
+      jQuery.when(jqxhr_text, jqxhr_meta, jqxhr_status)
+          .done(init_callback_factory(page_id));
     }
 
 
