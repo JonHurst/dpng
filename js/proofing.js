@@ -186,38 +186,42 @@ function proofreader() {
     var validator = "";
     var is_baseline = true;
 
-    $("#text_container").resizable({handles: "s",
-                                    minHeight: 100,
-                                    stop:
-                                    function(event, ui) {
-                                      if(localStorage)
-                                        localStorage["text_container_height"] =
-                                          ui.size.height;
-                                      select();
-                                      }});
+    $("#text_container").resizable(
+      {handles: "s", minHeight: 100,
+       stop: function(event, ui) {
+         if(localStorage) 
+           localStorage["text_container_height"] = ui.size.height;
+         select();}});
     if(localStorage && localStorage["text_container_height"]) {
       $("#text_container").height(localStorage["text_container_height"]); }
 
 
-    function init(text, _goodwords, _validator, _is_baseline) {
-      goodwords = _goodwords || "";
-      validator = _validator;
-      is_baseline = _is_baseline;
-      current_line = 0;
-      current_token = -1;
-      var localStorageID = projid + "/" + page_id;
-      text_history = [];
-      if(localStorage && localStorage[localStorageID]) {
-        text_history = JSON.parse(localStorage[localStorageID]);
-        if(text != text_history[0])
-          text_history = [];
-        }
-      if(text_history.length) {
-        refresh();
+    function init() {
+      function gettext_callback_factory(_page_id) {
+        return function(ob) {
+          if(page_id == _page_id) {
+            var localStorageID = projid + "/" + page_id;
+            text_history = [];
+            if(localStorage && localStorage[localStorageID]) {
+              text_history = JSON.parse(localStorage[localStorageID]);
+              if(ob != text_history[0])
+                text_history = [];
+            }
+            if(text_history.length) refresh();
+            else change_text(ob);
+          }
+        };
       }
-      else {
-        change_text(text);
-      }
+      jQuery.getJSON(
+        ajax_interface, { verb:"get_meta", projid: projid},
+        function(ob) {
+          goodwords = ob.goodwords || "";
+          validator = ob.validator || "../cgi-bin/proofing_validator.py";
+          current_line = 0;
+          current_token = -1;
+          jQuery.get(ajax_interface, {projid:projid, pageid:page_id, verb:"get_text"},
+                     gettext_callback_factory(page_id));
+        });
     }
 
 
@@ -554,24 +558,6 @@ function proofreader() {
   function command_func() {
     var control_data;
 
-    function page_callback(ob, status) {
-      //initialise controls
-      control_data = ob;
-      if(ob[0] != page_id) return; //out of synch callback
-      $('#pageid').text(page_id);
-      text_container.init(ob[1], ob[4], ob[5], ob[6]);
-      image_container.init(ob[2], ob[3]);
-      if(ob[6]) {//if baseline
-        $('#diffs').css('display', 'none');
-        $('#diffs').empty();
-      }
-      else {
-        $('#diffs').css('display', 'none');
-        $("#diffs").accordion("destroy");
-        $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id}, diffload_callback);
-      }
-    }
-
     function diffload_callback(ob, status) {
       if($("#diffs h3").length) {
             $("#diffs").accordion({autoHeight: false, collapsible: true});
@@ -579,9 +565,10 @@ function proofreader() {
       $('#diffs').css('display', 'block');
     }
 
-    function change_page(page) {
+    function set_page(page) {
       page_id = page;
       image_container.init();
+      text_container.init()
     }
 
     
@@ -629,7 +616,7 @@ function proofreader() {
 
 
     return {
-      change_page: change_page,
+      set_page: set_page,
       submit: submit,
       list: list,
       reserve: reserve
@@ -788,7 +775,7 @@ function proofreader() {
       var href = $(event.target).attr('href');
       if(href) {
           $('#pagepicker').dialog('close');
-          command.change_page(href);
+          command.set_page(href);
       }
     }
     $('#pagepicker').click(click);
