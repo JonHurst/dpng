@@ -74,15 +74,12 @@ function proofreader() {
     var max_line =  0;
     var line_positions;
 
-    $("#image_container").resizable({handles: "s",
-                                    minHeight: 100,
-                                    stop:
-                                    function(event, ui) {
-                                      if(localStorage)
-                                        localStorage["image_container_height"] =
-                                          ui.size.height;
-                                      select();
-                                      }});
+    $("#image_container").resizable(
+      {handles: "s", minHeight: 100,
+       stop: function(event, ui) {
+         if(localStorage)
+           localStorage["image_container_height"] = ui.size.height;
+         select();}});
     if(localStorage && localStorage["image_container_height"]) {
       $("#image_container").height(localStorage["image_container_height"]); }
 
