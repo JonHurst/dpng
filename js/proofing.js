@@ -549,8 +549,9 @@ function proofreader() {
 
     function set_page(page) {
       page_id = page;
+      $("#pageid").text(page_id);
       image_container.init();
-      text_container.init()
+      text_container.init();
     }
 
     
