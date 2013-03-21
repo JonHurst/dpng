@@ -114,13 +114,19 @@ function proofreader() {
 
     function init() {
       line_positions =  [1000];
+      //only load line_positions for current page_id
+      function linepos_handler_factory(_page_id) {
+        return function(ob) {
+          if(page_id == _page_id) {
+            if(ob) line_positions = ob;
+            max_line = line_positions.length;
+            current_line = 0;
+            select();
+          }};
+      }
       jQuery.getJSON(ajax_interface, 
                      {projid:projid, pageid:page_id, verb:"get_lines"},
-                     function(ob) {
-                       if(ob) line_positions = ob;
-                       max_line = line_positions.length;
-                       current_line = 0;
-                       select();});
+                     linepos_handler_factory(page_id));
       load_image(page_id, 1);
       //handler functions are generated closures to ensure correctly loaded image
       //is not overwritten due to a slow response to a previous ajax call
