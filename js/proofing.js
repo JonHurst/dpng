@@ -122,12 +122,18 @@ function proofreader() {
                        current_line = 0;
                        select();});
       load_image(page_id, 1);
+      //handler functions are generated closures to ensure correctly loaded image
+      //is not overwritten due to a slow response to a previous ajax call
+      function imgload_handler_factory(_page_id, pos) {
+        return function(ob) {if(_page_id == page_id) load_image(ob, pos);
+                             else load_image(null, pos);};
+      }
       jQuery.getJSON(ajax_interface, 
                      {projid:projid, pageid:page_id, verb:"get_prev"},
-                    function(ob) {load_image(ob, 0);});
+                    imgload_handler_factory(page_id, 0));
       jQuery.getJSON(ajax_interface, 
                      {projid:projid, pageid:page_id, verb:"get_next"},
-                    function(ob) {load_image(ob, 2);});
+                    imgload_handler_factory(page_id, 2));
     }
 
 
