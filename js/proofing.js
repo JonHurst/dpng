@@ -85,12 +85,12 @@ function proofreader() {
 
 
     function load_image(page, pos) {
-        var url = "../images/blank.png";
-        if(page) {
-            url = ajax_interface + "?" + jQuery.param({verb: "get_image",
-                                                       projid: projid,
-                                                       pageid: page});
-        }
+      var url = "../images/blank.png";
+      if(page) {
+        url = ajax_interface + "?" + jQuery.param({verb: "get_image",
+                                                   projid: projid,
+                                                   pageid: page});
+      }
       var img = $("<img />").attr({'src': url, 'alt': pos});
       if (img.get(0).complete || img.get(0).readyState === 4) {
         image_load_handler({currentTarget: img.get(0)});
