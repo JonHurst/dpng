@@ -770,8 +770,11 @@ function proofreader() {
         return function(ob, status) {
           if(_listing_sn == listing_sn) {
             $('#res_list').replaceWith($("<div id='res_list'/>").append(build_table(ob[0])));
+            $('#res_tab_hdg').text("Reserved (" + ob[0].length + ")");
             $('#diff_list').replaceWith($("<div id='diff_list'/>").append(build_table(ob[1])));
+            $('#diffs_tab_hdg').text("Diffs (" + ob[1].length + ")");
             $('#done_list').replaceWith($("<div id='done_list'/>").append(build_table(ob[2])));
+            $('#done_tab_hdg').text("Done (" + ob[2].length + ")");
             $('#res_list a:first').focus();
           }
         };
