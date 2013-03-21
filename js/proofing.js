@@ -453,27 +453,6 @@ function proofreader() {
       refresh(true);
     }
 
-    function click(event) {
-      //find clicked line
-      var line = 0;
-      var div = event.target;
-      if(div.tagName == "SPAN" || div.tagName == "IMG")
-        div = div.parentNode;
-      while((div = div.previousSibling)){
-        if($(div).hasClass("line")) line++;
-      }
-      event.target = event.target || event.srcElement;
-      if(line == current_line && event.target.nodeName == "SPAN") {
-        var pos = (event.clientX - $(event.target).offset().left) / $(event.target).outerWidth();
-        edit(pos, event.target);
-      }
-      else {
-        var offset = select(line);
-        image_container.move(offset);
-      }
-    }
-    // $('#text_container').click(click);
-
 
     function undo() {
       if(text_history.length > 1) {
