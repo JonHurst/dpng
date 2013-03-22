@@ -7,50 +7,50 @@ function proofreader() {
   var projid = "";
   var page_id = "";
 
-  //extract projid and task from URL
-  var url_param_strings = location.search.substring(1).split("&");
-  for(var c = 0; c < url_param_strings.length; c++) {
-    var pos = url_param_strings[c].indexOf("=");
-    if(pos == -1) continue;
-    var name = url_param_strings[c].substring(0, pos);
-    if(name == "projid")  {
-      projid = decodeURIComponent(url_param_strings[c].substring(pos + 1));
+
+  function init() {
+    //extract projid from URL
+    var url_param_strings = location.search.substring(1).split("&");
+    for(var c = 0; c < url_param_strings.length; c++) {
+      var pos = url_param_strings[c].indexOf("=");
+      if(pos == -1) continue;
+      var name = url_param_strings[c].substring(0, pos);
+      if(name == "projid")  {
+        projid = decodeURIComponent(url_param_strings[c].substring(pos + 1));
+      }
     }
+    //set up ui width and slider
+    var ui_width = 800;
+    if(localStorage && localStorage["ui_width"]) {
+      ui_width = localStorage["ui_width"];
+      $("#spacer, #title_bar, #control_bar, #diffs").width(ui_width);
+    }
+    $("#slider").slider(
+      {value: ui_width, min: 400, max: 1500, step: 25,
+       slide: function(ev, ui) {
+         $("#spacer, #title_bar, #control_bar, #diffs").width(ui.value);
+         $(document).trigger({type:"uiwidth", width:ui.value});},
+       stop: function(ev, ui) {
+         if(localStorage) localStorage["ui_width"] = ui.value;}});
+    $(document).trigger({type:"uiwidth", width:ui_width});
+    //asynchrously insert title and guidelines link
+    jQuery.getJSON(ajax_interface, { verb:"get_meta", projid: projid}, 
+                   function (ob) {
+                     $('#title').text(ob["title"]);
+                     if(ob["project_link"])
+                       $("#project_link").attr("href", ob["project_link"]);
+                     else
+                       $("#project_link").remove();});
+    //Set all menu_bar links in open in new windows
+    $('#menu_bar > a').click(function(event) {
+                           window.open($(this).attr('href'));
+                           event.preventDefault();});
+    //Show pagepicker to start
+    page_picker.show();
   }
-
-  //insert title and guidelines link
-  function init_callback(ob, status) {
-    $('#title').text(ob["title"]);
-    if(ob["project_link"])
-      $("#project_link").attr("href", ob["project_link"]);
-    else
-      $("#project_link").remove();
-  }
-  jQuery.getJSON(ajax_interface, { verb:"get_meta", projid: projid}, init_callback);
+  
 
 
-  //set up jQuery ui
-  var ui_width = 800;
-  if(localStorage && localStorage["ui_width"]) {
-    ui_width = localStorage["ui_width"];
-    $("#spacer, #title_bar, #image_container, #text_container, #control_bar, #editor, #diffs").width(ui_width);
-  }
-
-
-  function slide(event, ui) {
-    $("#spacer, #title_bar, #image_container, #text_container, #control_bar, #editor, #diffs").width(ui.value);
-      image_container.select();
-      text_container.select();
-  }
-
-  $("#slider").slider({ value: ui_width,
-                        min: 400,
-                        max: 1500,
-                        step: 25,
-                        slide: slide,
-                        stop: function(event, ui) {
-                          if(localStorage)
-                              localStorage["ui_width"] = ui.value;}});
 
   $("#spacer").resizable({handles: "s",
                           minHeight: 16,
@@ -64,18 +64,13 @@ function proofreader() {
   $("#change_page, #submit, #reserve, #close_editor").button();
   $("#close_interface").button({icons:{primary: "ui-icon-closethick"}, text:false});
 
-  //open all menu_bar links in new windows
-  $('#menu_bar > a').click(function(event) {
-                           window.open($(this).attr('href'));
-                           event.preventDefault();
-                         });
 
 
   function image_container_func() {
 
-    var current_line;
+    var current_line = 0;
     var max_line =  0;
-    var line_positions;
+    var line_positions = [1000];
 
     $("#image_container").resizable(
       {handles: "s", minHeight: 100,
@@ -85,6 +80,8 @@ function proofreader() {
          select();}});
     if(localStorage && localStorage["image_container_height"]) {
       $("#image_container").height(localStorage["image_container_height"]); }
+    $(document).bind("uiwidth", 
+                     function(ob){$("#image_container").width(ob.width); select();});
 
 
     function load_image(page, pos) {
@@ -111,7 +108,6 @@ function proofreader() {
 
 
     function init() {
-      line_positions =  [1000];
       //only load line_positions for current page_id
       function linepos_handler_factory(_page_id) {
         return function(ob) {
@@ -197,6 +193,8 @@ function proofreader() {
          select();}});
     if(localStorage && localStorage["text_container_height"]) {
       $("#text_container").height(localStorage["text_container_height"]); }
+    $(document).bind("uiwidth",
+                     function(ob) {$('#text_container').width(ob.width); select();});
 
 
     function init() {
@@ -487,6 +485,9 @@ function proofreader() {
 
 
   function editor_func() {
+
+    $(document).bind("uiwidth",
+                    function(ob) {$('#editor').width(ob.width);});
     //easier to handle raw elememnt for textarea
     var ta = $('#editor textarea').get(0);
 
@@ -813,8 +814,8 @@ function proofreader() {
     }
     var page_picker = pagepicker_func();
 
-    //Show pagepicker to start
-    page_picker.show();
+  //Initialise proofreader
+  init();
   };
 
 
