@@ -319,6 +319,7 @@ function proofreader() {
     function edit(pos, element) {
       if(element == undefined && current_token != -1)
         element = $('div.current_line span').get(current_token);
+      pos = pos || 0;
       var text = text_history[text_history.length -1];
       var caret_pos = lines[current_line];
       //calculate equivalent line including blank lines
@@ -655,9 +656,10 @@ function proofreader() {
   function command_bar_func() {
     $(document).bind("uiwidth",
                     function(ob) {$("#control_bar").width(ob.width);});
-    $("#change_page, #submit, #reserve, #close_editor").button();
+    $("#change_page, #submit, #reserve, #close_editor, #open_editor").button();
     $('#change_page').click(function(){page_picker.show();});
     $('#submit').click(function(){command.submit(projid);});
+    $('#open_editor').click(function() {text_container.edit(0);});
     $('#close_editor').click(text_container.end_edit);
     $('#hl-punc').change(function(eventObject) {
                             $('#text_container').toggleClass("nohl");
