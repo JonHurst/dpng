@@ -197,7 +197,7 @@ function proofreader() {
     if(localStorage && localStorage["text_container_height"]) {
       $("#text_container").height(localStorage["text_container_height"]); }
     $(document).bind("uiwidth",
-                     function(ob) {$('#text_container').width(ob.width); select();});
+                     function(ob) {$('#text_container, #editor').width(ob.width); select();});
     $(document).bind("page", new_page);
 
 
@@ -339,7 +339,48 @@ function proofreader() {
             caret_pos += $(element).text().length;
         }
       }
-      editor.activate(text, caret_pos, line, all_lines.length);
+      activate_editor(text, caret_pos, line, all_lines.length);
+    }
+
+
+    function activate_editor(text, caret_pos, caret_line, total_lines) {
+      var ta = $('#editor textarea').get(0);
+      ta.removeAttribute('readonly');
+      ta.value = text;
+      $('#editor').css('display', 'block');
+      command_bar.editor_mode(true);
+      keyhandler.editor();
+      //I feel so dirty... have to browser sniff for Opera because it includes newline
+      //characters in the count for the caret
+      if(navigator.userAgent.toLowerCase().match(/opera/)) {
+        caret_pos += caret_line;
+      }
+      //set caret position either with setSelectionRange or createTextRange as available
+      if(ta.setSelectionRange)
+        ta.setSelectionRange(caret_pos, caret_pos);
+      else if(ta.createTextRange) {//IE
+        var range = ta.createTextRange();
+        range.collapse(true);
+        range.moveEnd('character', caret_pos);
+        range.moveStart('character', caret_pos);
+        range.select();
+      }
+      //set scroll position
+      var row_height = ta.scrollHeight / total_lines;
+      ta.scrollTop = caret_line * row_height - (ta.clientHeight - row_height)/ 2;
+      //set focus to the control
+      ta.focus();
+    }
+
+
+    function deactivate_editor() {
+      var ta = $('#editor textarea').get(0);
+      ta.blur();
+      ta.setAttribute('readonly', 'readonly');
+      $('#editor').css('display', 'none');
+      command_bar.editor_mode(false);
+      keyhandler.normal();
+      change_text(ta.value);
     }
 
 
@@ -475,6 +516,7 @@ function proofreader() {
       next: next,
       prev: prev,
       edit: edit,
+      end_edit: deactivate_editor,
       undo: undo,
       change_text: change_text,
       get_text: get_text,
@@ -487,59 +529,6 @@ function proofreader() {
   }
   var text_container = text_container_func();
 
-
-  function editor_func() {
-
-    $(document).bind("uiwidth",
-                    function(ob) {$('#editor').width(ob.width);});
-    //easier to handle raw elememnt for textarea
-    var ta = $('#editor textarea').get(0);
-
-
-    function activate(text, caret_pos, caret_line, total_lines) {
-      ta.removeAttribute('readonly');
-      ta.value = text;
-      $('#editor').css('display', 'block');
-      command_bar.editor_mode(true);
-      keyhandler.editor();
-      //I feel so dirty... have to browser sniff for Opera because it includes newline
-      //characters in the count for the caret
-      if(navigator.userAgent.toLowerCase().match(/opera/)) {
-        caret_pos += caret_line;
-      }
-      //set caret position either with setSelectionRange or createTextRange as available
-      if(ta.setSelectionRange)
-        ta.setSelectionRange(caret_pos, caret_pos);
-      else if(ta.createTextRange) {//IE
-        var range = ta.createTextRange();
-        range.collapse(true);
-        range.moveEnd('character', caret_pos);
-        range.moveStart('character', caret_pos);
-        range.select();
-      }
-      //set scroll position
-      var row_height = ta.scrollHeight / total_lines;
-      ta.scrollTop = caret_line * row_height - (ta.clientHeight - row_height)/ 2;
-      //set focus to the control
-      ta.focus();
-    }
-
-
-    function deactivate() {
-      ta.blur();
-      ta.setAttribute('readonly', 'readonly');
-      $('#editor').css('display', 'none');
-      command_bar.editor_mode(false);
-      keyhandler.normal();
-      text_container.change_text(ta.value);
-    }
-
-    return {
-      activate: activate,
-      deactivate: deactivate
-    };
-  }
-  var editor = editor_func();
 
 
   function command_func() {
@@ -658,7 +647,7 @@ function proofreader() {
 
     function editor_keydown_handler(event) {
       if(event.which == 27) {//esc
-        editor.deactivate();
+        text_container.end_edit();
         event.preventDefault(); //cancel default action of ESC as it kills AJAX requests
       }
     }
@@ -678,7 +667,7 @@ function proofreader() {
     $("#change_page, #submit, #reserve, #close_editor").button();
     $('#change_page').click(function(){page_picker.show();});
     $('#submit').click(function(){command.submit(projid);});
-    $('#close_editor').click(editor.deactivate);
+    $('#close_editor').click(text_container.end_edit);
     $('#hl-punc').change(function(eventObject) {
                             $('#text_container').toggleClass("nohl");
                         });
