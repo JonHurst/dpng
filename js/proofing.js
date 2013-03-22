@@ -68,8 +68,8 @@ function proofreader() {
   function image_container_func() {
 
     var current_line = 0;
-    var max_line =  1;
-    var line_positions = [1000];
+    var max_line;
+    var line_positions;
     var page_id;
     var offset = 0;
 
@@ -116,9 +116,9 @@ function proofreader() {
       function linepos_handler_factory(_page_id) {
         return function(ob) {
           if(page_id == _page_id) {
-            if(ob) line_positions = ob;
-            max_line = line_positions.length;
             current_line = 0;
+            line_positions = ob;
+            max_line = line_positions && line_positions.length;
             select();
           }};
       }
@@ -142,6 +142,7 @@ function proofreader() {
 
 
     function select(line) {
+      if(!line_positions) return;
       // var line = _line != undefined ? _line: current_line;
       if(line == undefined) line = current_line;
       current_line = line;
