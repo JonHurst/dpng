@@ -51,6 +51,8 @@ function proofreader() {
   function title_bar_func() {
     $(document).bind("uiwidth",
                     function(ob) {$('#title_bar, #spacer').width(ob.width);});
+    $(document).bind("page",
+                     function(ob) {$("#pageid").text(ob.page_id);});
     $("#close_interface").button({icons:{primary: "ui-icon-closethick"}, text:false});
     $("#spacer").resizable(
       {handles: "s", minHeight: 16,
@@ -68,6 +70,7 @@ function proofreader() {
     var current_line = 0;
     var max_line =  0;
     var line_positions = [1000];
+    var page_id;
 
     $("#image_container").resizable(
       {handles: "s", minHeight: 100,
@@ -79,6 +82,7 @@ function proofreader() {
       $("#image_container").height(localStorage["image_container_height"]); }
     $(document).bind("uiwidth", 
                      function(ob){$("#image_container").width(ob.width); select();});
+    $(document).bind("page", new_page);
 
 
     function load_image(page, pos) {
@@ -104,7 +108,8 @@ function proofreader() {
     }
 
 
-    function init() {
+    function new_page(ob) {
+      page_id = ob.page_id;
       //only load line_positions for current page_id
       function linepos_handler_factory(_page_id) {
         return function(ob) {
@@ -160,7 +165,6 @@ function proofreader() {
     function prev() {move(-1);}
 
     return {
-      init: init,
       select: select,
       move: move,
       next: next,
@@ -181,6 +185,8 @@ function proofreader() {
     var validation_sn = 0;
     var validator = "";
     var is_baseline = true;
+    var page_id;
+    
 
     $("#text_container").resizable(
       {handles: "s", minHeight: 100,
@@ -192,9 +198,11 @@ function proofreader() {
       $("#text_container").height(localStorage["text_container_height"]); }
     $(document).bind("uiwidth",
                      function(ob) {$('#text_container').width(ob.width); select();});
+    $(document).bind("page", new_page);
 
 
-    function init() {
+    function new_page(ob) {
+      page_id = ob.page_id;
       var jqxhr_text = jQuery.get(ajax_interface, {projid:projid, pageid:page_id, verb:"get_text"});
       var jqxhr_meta =jQuery.getJSON(ajax_interface, { verb:"get_meta", projid: projid});
       var jqxhr_status = jQuery.get(ajax_interface, {projid:projid, pageid:page_id, verb:"status"});
@@ -462,7 +470,6 @@ function proofreader() {
 
 
     return {
-      init: init,
       select: select,
       move: move,
       next: next,
@@ -538,21 +545,14 @@ function proofreader() {
   function command_func() {
     var control_data;
 
-    function diffload_callback(ob, status) {
-      if($("#diffs h3").length) {
-            $("#diffs").accordion({autoHeight: false, collapsible: true});
-      }
-      $('#diffs').css('display', 'block');
-    }
+    // function diffload_callback(ob, status) {
+    //   if($("#diffs h3").length) {
+    //         $("#diffs").accordion({autoHeight: false, collapsible: true});
+    //   }
+    //   $('#diffs').css('display', 'block');
+    // }
 
-    function set_page(page) {
-      page_id = page;
-      $("#pageid").text(page_id);
-      image_container.init();
-      text_container.init();
-    }
 
-    
     function submit(proj_id) {
       if(!page_id) return;
       jQuery.post(ajax_interface,
@@ -573,31 +573,8 @@ function proofreader() {
       }
     }
 
-
-    function list(proj_id) {
-      page_picker.show();
-    }
-
-
-    function reserve(proj_id) {
-      jQuery.post(ajax_interface,
-                  {verb:"reserve", projid: proj_id}, reserve_callback);
-    }
-
-
-    function reserve_callback(ob, status) {
-      page_picker.refresh();
-      if(ob == "COMPLETE") {
-        alert("Proofing complete.");
-      }
-    }
-
-
     return {
-      set_page: set_page,
-      submit: submit,
-      list: list,
-      reserve: reserve
+      submit: submit
     };
   }
   var command = command_func();
@@ -672,7 +649,7 @@ function proofreader() {
         text_container.undo();
         }
       else if(event.which == 80) {//p - pages
-        command.list(projid);
+        pagepicker.show();
       }
       else if(event.which == 83) {//s - submit
         command.submit(projid);
@@ -699,7 +676,7 @@ function proofreader() {
     $(document).bind("uiwidth",
                     function(ob) {$("#control_bar").width(ob.width);});
     $("#change_page, #submit, #reserve, #close_editor").button();
-    $('#change_page').click(function(){command.list(projid);});
+    $('#change_page').click(function(){page_picker.show();});
     $('#submit').click(function(){command.submit(projid);});
     $('#close_editor').click(editor.deactivate);
     $('#hl-punc').change(function(eventObject) {
@@ -738,28 +715,31 @@ function proofreader() {
     var listing_sn = 0;
     $("#tabs").tabs();
     $("#pagepicker").dialog(
-      {autoOpen: false,
-       modal:true,
-       width:500, height:600, position: ['center', 50],
+      {autoOpen: false, modal:true, width:500, height:600, position:['center', 50],
        close: before_close});
 
 
-    function reserve() {
-      command.reserve(projid);
+    $('#reserve').click(
+      function(ob){
+        jQuery.post(ajax_interface, 
+                    {verb:"reserve", projid: proj_id},
+                    function(ob) {
+                      refresh();
+                      if(ob == "COMPLETE") 
+                        alert("Proofing complete.");});
       $('#reserve').button("disable");
-    }
-    $('#reserve').click(reserve);
+    });
 
 
-    function click(event) {
-      event.preventDefault();
-      var href = $(event.target).attr('href');
-      if(href) {
+    $('#pagepicker').click(
+      function(event) {
+        event.preventDefault();
+        var href = $(event.target).attr('href');
+        if(href) {
           $('#pagepicker').dialog('close');
-          command.set_page(href);
-      }
-    }
-    $('#pagepicker').click(click);
+          $(document).trigger({type:"page", page_id:href});
+        }
+      });
 
 
     function refresh() {
