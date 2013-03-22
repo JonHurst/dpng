@@ -23,12 +23,10 @@ function proofreader() {
     var ui_width = 800;
     if(localStorage && localStorage["ui_width"]) {
       ui_width = localStorage["ui_width"];
-      $("#spacer, #title_bar, #control_bar, #diffs").width(ui_width);
     }
     $("#slider").slider(
       {value: ui_width, min: 400, max: 1500, step: 25,
        slide: function(ev, ui) {
-         $("#spacer, #title_bar, #control_bar, #diffs").width(ui.value);
          $(document).trigger({type:"uiwidth", width:ui.value});},
        stop: function(ev, ui) {
          if(localStorage) localStorage["ui_width"] = ui.value;}});
@@ -50,20 +48,19 @@ function proofreader() {
   }
   
 
-
-
-  $("#spacer").resizable({handles: "s",
-                          minHeight: 16,
-                          stop: function(event, ui) {
-                            if(localStorage)
-                              localStorage["spacer_height"] =
-                                ui.size.height;}});
-  if(localStorage && localStorage["spacer_height"]) {
-    $("#spacer").height(localStorage["spacer_height"]); }
-
-  $("#change_page, #submit, #reserve, #close_editor").button();
-  $("#close_interface").button({icons:{primary: "ui-icon-closethick"}, text:false});
-
+  function title_bar_func() {
+    $(document).bind("uiwidth",
+                    function(ob) {$('#title_bar, #spacer').width(ob.width);});
+    $("#close_interface").button({icons:{primary: "ui-icon-closethick"}, text:false});
+    $("#spacer").resizable(
+      {handles: "s", minHeight: 16,
+       stop: function(event, ui) {
+         if(localStorage)
+           localStorage["spacer_height"] = ui.size.height;}});
+    if(localStorage && localStorage["spacer_height"]) {
+      $("#spacer").height(localStorage["spacer_height"]); }
+  }
+  var title_bar = title_bar_func();
 
 
   function image_container_func() {
@@ -699,7 +696,9 @@ function proofreader() {
 
 
   function command_bar_func() {
-
+    $(document).bind("uiwidth",
+                    function(ob) {$("#control_bar").width(ob.width);});
+    $("#change_page, #submit, #reserve, #close_editor").button();
     $('#change_page').click(function(){command.list(projid);});
     $('#submit').click(function(){command.submit(projid);});
     $('#close_editor').click(editor.deactivate);
