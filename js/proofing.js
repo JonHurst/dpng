@@ -509,6 +509,21 @@ function proofreader() {
     }
 
 
+    function submit(proj_id) {
+      if(!page_id) return;
+      jQuery.post(
+        ajax_interface,
+        {verb:"save", projid: projid, pageid: page_id, text:get_text()},
+        function submit_callback(ob, status) {
+          if(ob == "OK") 
+            text_container.set_clean();
+          else 
+            $("#status").text("Save failed");
+        });
+    }
+
+
+
     return {
       select: select,
       move: move,
@@ -523,49 +538,11 @@ function proofreader() {
       set_clean: set_clean,
       add_blank_line: add_blank_line,
       next_token: next_token,
-      prev_token: prev_token
-    };
-  }
-  var text_container = text_container_func();
-
-
-
-  function command_func() {
-    var control_data;
-
-    // function diffload_callback(ob, status) {
-    //   if($("#diffs h3").length) {
-    //         $("#diffs").accordion({autoHeight: false, collapsible: true});
-    //   }
-    //   $('#diffs').css('display', 'block');
-    // }
-
-
-    function submit(proj_id) {
-      if(!page_id) return;
-      jQuery.post(ajax_interface,
-                  {verb:"save", projid: proj_id, pageid: page_id, text:text_container.get_text()},
-                  submit_callback);
-    }
-
-
-    function submit_callback(ob, status) {
-      if(ob == "OK") {
-        text_container.set_clean();
-        $('#diffs').css('display', 'none');
-        $("#diffs").accordion("destroy");
-        // $('#diffs').load(ajax_interface, {verb:"diffs", task: task, projid: projid, pageid: page_id}, diffload_callback);
-      }
-      else {
-        $("status").text("Save failed");
-      }
-    }
-
-    return {
+      prev_token: prev_token,
       submit: submit
     };
   }
-  var command = command_func();
+  var text_container = text_container_func();
 
 
   function keyhandler_func()  {
@@ -639,9 +616,10 @@ function proofreader() {
         page_picker.show();
       }
       else if(event.which == 83) {//s - submit
-        command.submit(projid);
+        text_container.submit();
       }
     }
+
 
     function editor_keydown_handler(event) {
       if(event.which == 27) {//esc
@@ -658,7 +636,7 @@ function proofreader() {
                     function(ob) {$("#control_bar").width(ob.width);});
     $("#change_page, #submit, #reserve, #close_editor, #open_editor").button();
     $('#change_page').click(function(){page_picker.show();});
-    $('#submit').click(function(){command.submit(projid);});
+    $('#submit').click(function(){text_container.submit();});
     $('#open_editor').click(function() {text_container.edit(0);});
     $('#close_editor').click(text_container.end_edit);
     $('#hl-punc').change(function(eventObject) {
