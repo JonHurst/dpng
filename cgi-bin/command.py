@@ -8,6 +8,7 @@ import os
 import xml.etree.cElementTree as et
 import project
 import re
+import datetime
 
 data_path = "../data/"
 
@@ -70,7 +71,10 @@ class CommandProcessor:
     def get_image(self):
         pageid = self.form.getfirst("pageid")
         if not pageid: raise CommandException(CommandException.NOPAGEID)
-        sys.stdout.buffer.write(b"Content-type: image/png\n\n" +
+        exp = datetime.datetime.utcnow() + datetime.timedelta(days=364);
+        sys.stdout.buffer.write(b"Content-type: image/png\n" +
+                                b"Expires: " + exp.strftime("%a, %d %b %Y %H:%M:%S +0000").encode("ascii") +
+                                b"\n\n" +
                                 self.data.pages[pageid].get_image())
 
 
@@ -178,7 +182,7 @@ class FakeForm:
     def getfirst(self, value):
         values = {
             "projid": "test",
-            "verb": "save",
+            "verb": "get_image",
             "pageid": "001",
             "text": "Test text"
             }
