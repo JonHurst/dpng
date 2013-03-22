@@ -68,9 +68,10 @@ function proofreader() {
   function image_container_func() {
 
     var current_line = 0;
-    var max_line =  0;
+    var max_line =  1;
     var line_positions = [1000];
     var page_id;
+    var offset = 0;
 
     $("#image_container").resizable(
       {handles: "s", minHeight: 100,
@@ -83,6 +84,7 @@ function proofreader() {
     $(document).bind("uiwidth", 
                      function(ob){$("#image_container").width(ob.width); select();});
     $(document).bind("page", new_page);
+    $(document).bind("linechange", function(ob) {select(ob.line);});
 
 
     function load_image(page, pos) {
@@ -139,11 +141,13 @@ function proofreader() {
     }
 
 
-    function select(_line) {
-      var line = _line != undefined ? _line : current_line;
-      if(line < 0) line = 0; else if(line >= max_line) line = max_line - 1;
-      var offset = line - current_line;
+    function select(line) {
+      // var line = _line != undefined ? _line: current_line;
+      if(line == undefined) line = current_line;
       current_line = line;
+      line += offset;
+      if(line < 0) line = 0; else if(line >= max_line) line = max_line - 1;
+      offset = line - current_line; //if offset pushes line beyond boundaries, reduce it
       var main_image = $("#main-image img");
       var image_pos = main_image.offset();
       var line_pos = image_pos;
@@ -157,18 +161,16 @@ function proofreader() {
       var scroll_top = $('#context-image-top').height() +
                          line_offset - $('#images').height() / 2;
       $("#images").scrollTop(scroll_top);
-      return offset;
     }
 
-    function move(offset) {select(current_line + offset);}
-    function next () {move(1);}
-    function prev() {move(-1);}
+    
+    function modify_offset(c) {
+      offset += c;
+      select();
+    }
 
     return {
-      select: select,
-      move: move,
-      next: next,
-      prev: prev
+      modify_offset:modify_offset
     };
   }
   var image_container = image_container_func();
@@ -232,16 +234,17 @@ function proofreader() {
 
 
     function select(line) {
+      if(num_lines == 0) return;
       var num = line != undefined ? line : current_line;
       if(num < 0) num = 0; else if(num >= num_lines) num = num_lines - 1;
-      var offset = line - current_line;
       //remove 'current' class from span and line whenever line is changed
       if(num != current_line) {
         current_token = -1;
         $('div.current_line span.current').removeClass("current");
         $("div.current_line").removeClass("current_line");
+        $(document).trigger({type:"linechange", line:num});
+        current_line = num;
       }
-      current_line = num;
       var current_line_div = $("div.line").eq(num);
       if(current_line_div.length) {
         current_line_div.addClass("current_line");
@@ -256,7 +259,6 @@ function proofreader() {
           (current_line_div.height() -  $('#text').height()) / 2;
         $('#text').scrollTop(scroll_top);
       }
-      return offset;
     }
 
 
@@ -268,7 +270,6 @@ function proofreader() {
       current_token++;
       if(current_token == token_count) {
         next();
-        image_container.next();
         current_token = 0;
       }
       $('div.current_line span').eq(current_token).addClass("current");
@@ -285,7 +286,6 @@ function proofreader() {
       current_token--;
       if(current_token < 0) {
         prev();
-        image_container.prev();
         current_token =  $('div.current_line span').length - 1;
       }
       $('div.current_line span').eq(current_token).addClass("current");
@@ -563,18 +563,17 @@ function proofreader() {
     function default_keydown_handler(event) {
       // console.log("event.which: " + event.which + ", event.keyCode: " + event.keyCode + ", event.shiftKey: " + event.shiftKey);
       if(event.which == 74 || event.which == 40) { //j or down arrow
-        image_container.next();
-        if(!event.shiftKey)
+        if(event.shiftKey)
+          image_container.modify_offset(1);
+        else
           text_container.next();
         event.preventDefault();
         event.stopPropagation();//prevent up arrow scrolling focused pane
       }
-      else if(event.which == 78) {//n
-        image_container.next();
-      }
       else if(event.which == 75 || event.which == 38) { //k or up arrow
-        image_container.prev();
-        if(!event.shiftKey)
+        if(event.shiftKey)
+          image_container.modify_offset(-1);
+        else
           text_container.prev();
         event.preventDefault();
         event.stopPropagation();//prevent down arrow scrolling focused pane
@@ -596,7 +595,6 @@ function proofreader() {
       }
       else if(event.which == 85  || event.which == 36) { //u or home
         text_container.select(0);
-        image_container.select(0);
         event.preventDefault();
         event.stopPropagation();//prevent home button scrolling focused pane
         }
