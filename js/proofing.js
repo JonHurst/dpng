@@ -348,8 +348,7 @@ function proofreader() {
       ta.removeAttribute('readonly');
       ta.value = text;
       $('#editor').css('display', 'block');
-      command_bar.editor_mode(true);
-      keyhandler.editor();
+      $(document).trigger({type:"mode", mode:"editor"});
       //I feel so dirty... have to browser sniff for Opera because it includes newline
       //characters in the count for the caret
       if(navigator.userAgent.toLowerCase().match(/opera/)) {
@@ -378,8 +377,7 @@ function proofreader() {
       ta.blur();
       ta.setAttribute('readonly', 'readonly');
       $('#editor').css('display', 'none');
-      command_bar.editor_mode(false);
-      keyhandler.normal();
+      $(document).trigger({type:"mode", mode:"normal"});
       change_text(ta.value);
     }
 
@@ -571,19 +569,18 @@ function proofreader() {
 
   function keyhandler_func()  {
 
-    function set_default() {
-      $(document).unbind('keydown');
-      $(document).keydown(default_keydown_handler);
-    }
+    $(document).bind(
+      "mode",
+      function(ob) {
+        $(document).unbind('keydown');
+        if(ob.mode == "editor") {
+          $(document).keydown(editor_keydown_handler);
+        }
+        else if(ob.mode == "normal") {
+          $(document).keydown(default_keydown_handler);
+        }
+      });
 
-    function set_editor() {
-      $(document).unbind('keydown');
-      $(document).keydown(editor_keydown_handler);
-    }
-
-    function set_none() {
-      $(document).unbind('keydown');
-    }
 
     function default_keydown_handler(event) {
       // console.log("event.which: " + event.which + ", event.keyCode: " + event.keyCode + ", event.shiftKey: " + event.shiftKey);
@@ -638,7 +635,7 @@ function proofreader() {
         text_container.undo();
         }
       else if(event.which == 80) {//p - pages
-        pagepicker.show();
+        page_picker.show();
       }
       else if(event.which == 83) {//s - submit
         command.submit(projid);
@@ -651,12 +648,6 @@ function proofreader() {
         event.preventDefault(); //cancel default action of ESC as it kills AJAX requests
       }
     }
-
-    return {
-      normal: set_default,
-      editor: set_editor,
-      none: set_none
-    };
   }
   var keyhandler = keyhandler_func();
 
@@ -674,17 +665,18 @@ function proofreader() {
     $('#hl-punc, #submit, #close_editor').focus(function() {
                           $('#text_container').focus();
                         });
-    editor_mode(false);
+    $('#control_bar').removeClass("editor");
 
-
-    function editor_mode(bool) {
-      if(bool) {
-        $('#control_bar').addClass("editor");
-      }
-      else {
-        $('#control_bar').removeClass("editor");
-      }
-    }
+    $(document).bind(
+      "mode",
+      function(ob) {
+        if(ob.mode == "editor") {
+          $('#control_bar').addClass("editor");
+        }
+        else {
+          $('#control_bar').removeClass("editor");
+        }
+      });
 
 
     function enable_submit(bool) {
@@ -692,7 +684,6 @@ function proofreader() {
     }
 
     return {
-      editor_mode: editor_mode,
       enable_submit: enable_submit
     };
   }
@@ -705,7 +696,7 @@ function proofreader() {
     $("#tabs").tabs();
     $("#pagepicker").dialog(
       {autoOpen: false, modal:true, width:500, height:600, position:['center', 50],
-       close: before_close});
+       close: function() {$(document).trigger({type:"mode", mode:"normal"});}});
 
 
     $('#reserve').click(
@@ -753,14 +744,9 @@ function proofreader() {
 
 
     function show() {
-      keyhandler.none();
+      $(document).trigger({type:"mode", mode:"picker"});
       $('#pagepicker').dialog('open');
       refresh();
-    }
-
-
-    function before_close() {
-      keyhandler.normal();
     }
 
 
@@ -776,8 +762,7 @@ function proofreader() {
     }
 
     return {
-      show: show,
-      refresh: refresh
+      show: show
       };
     }
     var page_picker = pagepicker_func();
