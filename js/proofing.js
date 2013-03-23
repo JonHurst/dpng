@@ -537,7 +537,7 @@ function proofreader() {
   var text_container = text_container_func();
 
 
-  function keyhandler_func()  {
+  (function keyhandler() {
 
     $(document).bind(
       "mode",
@@ -617,11 +617,10 @@ function proofreader() {
         event.preventDefault(); //cancel default action of ESC as it kills AJAX requests
       }
     }
-  }
-  var keyhandler = keyhandler_func();
+  })();
 
 
-  function command_bar_func() {
+  (function command_bar() {
     $(document).bind("uiwidth",
                     function(ob) {$("#control_bar").width(ob.width);});
     $("#change_page, #submit, #reserve, #close_editor, #open_editor").button();
