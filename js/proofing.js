@@ -220,8 +220,7 @@ function proofreader() {
           validator = a_meta[0].validator || "../cgi-bin/proofing_validator.py";
           current_line = 0;
           current_token = -1;
-          is_baseline = true;
-          if(a_status[0] == "submitted") is_baseline = false;
+          is_baseline = (a_status[0] == "submitted") ? false : true;
           var localStorageID = projid + "/" + page_id;
           text_history = [];
           if(localStorage && localStorage[localStorageID]) {
@@ -440,14 +439,11 @@ function proofreader() {
       var text = text_history[text_history.length - 1];
       find_lines(text);
       if(text_history.length == 1 && is_baseline == false) {
-        $('#status').removeClass("warn").text("Submitted");
-        command_bar.enable_submit(false);
-        $('#text').focus();
+        $(document).trigger({type:"status", status:"clean"});
       }
       else {
-        $('#status').addClass("warn").text("Not Submitted");
-        command_bar.enable_submit(true);
-      }
+        $(document).trigger({type:"status", status:"dirty"});
+        }
       if(! skip_validate) {
         local_validate(text);
         if(text.length > 0) {
@@ -456,6 +452,7 @@ function proofreader() {
                      validator_callback, "html");
         }
       }
+      $('#text').focus();
     }
 
 
@@ -489,19 +486,6 @@ function proofreader() {
     }
 
 
-    function get_text() {return text_history[text_history.length - 1];}
-    function is_dirty() {return is_baseline || text_history.length > 1;}
-    function set_clean(){
-      text_history = [text_history[text_history.length - 1]];
-      if(localStorage) {
-        var localStorageID = projid + "/" + page_id;
-        localStorage.removeItem(localStorageID);
-      }
-      is_baseline = false;
-      refresh(true);
-    }
-
-
     function undo() {
       if(text_history.length > 1) {
         text_history.pop();
@@ -518,16 +502,23 @@ function proofreader() {
       if(!page_id) return;
       jQuery.post(
         ajax_interface,
-        {verb:"save", projid: projid, pageid: page_id, text:get_text()},
-        function submit_callback(ob, status) {
-          if(ob == "OK") 
-            text_container.set_clean();
-          else 
-            $("#status").text("Save failed");
+        {verb:"save", projid: projid, pageid: page_id,
+         text:text_history[text_history.length - 1]},
+        function(ob) {
+          if(ob == "OK") {
+            text_history = [text_history[text_history.length - 1]];
+            if(localStorage) {
+              var localStorageID = projid + "/" + page_id;
+              localStorage.removeItem(localStorageID);
+            }
+            is_baseline = false;
+            refresh();
+          }
+          else {
+            alert("Submit failed. Please try again.");
+          }
         });
     }
-
-
 
     return {
       select: select,
@@ -538,10 +529,6 @@ function proofreader() {
       end_edit: deactivate_editor,
       undo: undo,
       change_text: change_text,
-      get_text: get_text,
-      is_dirty: is_dirty,
-      set_clean: set_clean,
-      add_blank_line: add_blank_line,
       next_token: next_token,
       prev_token: prev_token,
       submit: submit
@@ -648,7 +635,6 @@ function proofreader() {
     $('#hl-punc, #submit, #close_editor').focus(function() {
                           $('#text_container').focus();
                         });
-    $('#control_bar').removeClass("editor");
 
     $(document).bind(
       "mode",
@@ -661,16 +647,14 @@ function proofreader() {
         }
       });
 
-
-    function enable_submit(bool) {
-      $('#submit').button("option", "disabled", !bool);
-    }
-
-    return {
-      enable_submit: enable_submit
-    };
-  }
-  var command_bar = command_bar_func();
+    $(document).bind(
+      "status",
+      function(ob) {
+        $('#submit').button(
+          "option", "disabled",
+          (ob.status == "clean") ? true : false);
+      });
+  })();
 
 
   function pagepicker_func() {
