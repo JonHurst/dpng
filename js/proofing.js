@@ -531,7 +531,9 @@ function proofreader() {
       change_text: change_text,
       next_token: next_token,
       prev_token: prev_token,
-      submit: submit
+      submit: submit,
+      focus: function() {$('#text_container').focus();},
+      toggle_punc_hl: function() {$('#text_container').toggleClass("nohl");}
     };
   }
   var text_container = text_container_func();
@@ -628,12 +630,8 @@ function proofreader() {
     $('#submit').click(function(){text_container.submit();});
     $('#open_editor').click(function() {text_container.edit(0);});
     $('#close_editor').click(text_container.end_edit);
-    $('#hl-punc').change(function(eventObject) {
-                            $('#text_container').toggleClass("nohl");
-                        });
-    $('#hl-punc, #submit, #close_editor').focus(function() {
-                          $('#text_container').focus();
-                        });
+    $('#hl-punc').attr('checked', true).change(text_container.toggle_punc_hl);
+    $('#hl-punc, #submit, #close_editor').focus(text_container.focus);
 
     $(document).bind(
       "mode",
