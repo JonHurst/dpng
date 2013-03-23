@@ -31,7 +31,7 @@ function proofreader() {
          if(localStorage) localStorage["ui_width"] = ui.value;}});
     $(document).trigger({type:"uiwidth", width:ui_width});
     //asynchrously insert title and guidelines link
-    jQuery.getJSON(ajax_interface, { verb:"get_meta", projid: projid}, 
+    jQuery.getJSON(ajax_interface, { verb:"get_meta", projid: projid},
                    function (ob) {
                      $('#title').text(ob["title"]);
                      if(ob["project_link"])
@@ -45,8 +45,8 @@ function proofreader() {
     //Show pagepicker to start
     page_picker.show();
   }
-  
-  
+
+
   (function title_bar() {
     $("#close_interface").button({icons:{primary: "ui-icon-closethick"}, text:false});
     $("#spacer").resizable(
@@ -85,7 +85,7 @@ function proofreader() {
          select();}});
     if(localStorage && localStorage["image_container_height"]) {
       $("#image_container").height(localStorage["image_container_height"]); }
-    $(document).bind("uiwidth", 
+    $(document).bind("uiwidth",
                      function(ob){$("#image_container").width(ob.width); select();});
     $(document).bind("page", new_page);
     $(document).bind("linechange", function(ob) {select(ob.line);});
@@ -126,7 +126,7 @@ function proofreader() {
             select();
           }};
       }
-      jQuery.getJSON(ajax_interface, 
+      jQuery.getJSON(ajax_interface,
                      {projid:projid, pageid:page_id, verb:"get_lines"},
                      linepos_handler_factory(page_id));
       load_image(page_id, 1);
@@ -136,10 +136,10 @@ function proofreader() {
         return function(ob) {if(_page_id == page_id) load_image(ob, pos);
                              else load_image(null, pos);};
       }
-      jQuery.getJSON(ajax_interface, 
+      jQuery.getJSON(ajax_interface,
                      {projid:projid, pageid:page_id, verb:"get_prev"},
                     imgload_handler_factory(page_id, 0));
-      jQuery.getJSON(ajax_interface, 
+      jQuery.getJSON(ajax_interface,
                      {projid:projid, pageid:page_id, verb:"get_next"},
                     imgload_handler_factory(page_id, 2));
     }
@@ -168,7 +168,7 @@ function proofreader() {
       $("#images").scrollTop(scroll_top);
     }
 
-    
+
     function modify_offset(c) {
       offset += c;
       select();
@@ -193,12 +193,12 @@ function proofreader() {
     var validator = "";
     var is_baseline = true;
     var page_id;
-    
+
 
     $("#text_container").resizable(
       {handles: "s", minHeight: 100,
        stop: function(event, ui) {
-         if(localStorage) 
+         if(localStorage)
            localStorage["text_container_height"] = ui.size.height;
          select();}});
     if(localStorage && localStorage["text_container_height"]) {
@@ -688,7 +688,7 @@ function proofreader() {
                     {verb:"reserve", projid: proj_id},
                     function(ob) {
                       refresh();
-                      if(ob == "COMPLETE") 
+                      if(ob == "COMPLETE")
                         alert("Proofing complete.");});
       $('#reserve').button("disable");
     });
