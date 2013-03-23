@@ -5,7 +5,6 @@ function proofreader() {
 
   var ajax_interface = "../cgi-bin/command.py";
   var projid = "";
-  var page_id = "";
 
 
   function init() {
