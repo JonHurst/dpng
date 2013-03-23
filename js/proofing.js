@@ -512,7 +512,7 @@ function proofreader() {
               localStorage.removeItem(localStorageID);
             }
             is_baseline = false;
-            refresh();
+            refresh(true);
           }
           else {
             alert("Submit failed. Please try again.");
