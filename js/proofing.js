@@ -667,8 +667,8 @@ function proofreader() {
 
     $('#reserve').click(
       function(ob){
-        jQuery.post(ajax_interface, 
-                    {verb:"reserve", projid: proj_id},
+        jQuery.post(ajax_interface,
+                    {verb:"reserve", projid: projid},
                     function(ob) {
                       refresh();
                       if(ob == "COMPLETE")
