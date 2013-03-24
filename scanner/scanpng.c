@@ -143,7 +143,7 @@ void weighted_mean_rows(png_uint_32 *p_row_ink, png_uint_32 height) {
   }
 }
 
-
+#ifndef NOPYTHON
 static PyObject *
 process_image(PyObject *self, PyObject *args) {
   png_bytep *row_pointers = 0;
@@ -177,7 +177,7 @@ process_image(PyObject *self, PyObject *args) {
     return NULL;
   }
   for(long c = 0; c < height; c++) {
-      PyObject *num = PyInt_FromLong(row_ink[c]);
+      PyObject *num = PyLong_FromLong(row_ink[c]);
       if(!num) {
         Py_DECREF(list);
         free(row_pointers[0]);
@@ -198,10 +198,15 @@ static PyMethodDef linedetect_methods[] = {
 };
 
 
-PyMODINIT_FUNC initscanner(void) {
-  Py_InitModule("scanner", linedetect_methods);
-}
+static struct PyModuleDef linedetect_module = {
+  PyModuleDef_HEAD_INIT,
+  "scanner", NULL, -1, linedetect_methods};
 
+
+PyMODINIT_FUNC PyInit_scanner(void) {
+  return PyModule_Create(&linedetect_module);
+}
+#endif //NOPYTHON
 
 int main(int argc, char **argv)
 {
@@ -217,9 +222,9 @@ int main(int argc, char **argv)
       row_ink[c] = process_row(row_pointers[c], width, width/16);
     }
     weighted_mean_rows(row_ink, height);
-    /* for(int c = 0; c < height; c++) { */
-    /*   printf("Row %d: %d\n", c, (int)row_ink[c]); */
-    /* } */
+    for(int c = 0; c < height; c++) {
+      printf("Row %d: %d\n", c, (int)(row_ink[c]/(width/16)));
+    }
   }
   if(row_pointers) {
     free(row_pointers[0]);
