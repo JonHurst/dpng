@@ -4,6 +4,7 @@ jQuery.ajaxSetup({'cache': false});
 function proofreader() {
 
   var ajax_interface = "../cgi-bin/command.py";
+  var diff_provider = "../cgi-bin/diffs.py";
   var projid = "";
 
 
@@ -730,6 +731,30 @@ function proofreader() {
       };
     }
     var page_picker = pagepicker_func();
+
+
+  (function diffs() {
+     var page_id;
+     $(document).bind(
+       "uiwidth",
+       function(ob) {$("#diffs").width(ob.width);});
+     $(document).bind(
+       "page",
+       function(ob) {page_id = ob.page_id; $('#diffs').empty().css("display", "none");});
+     $(document).bind(
+       "status",
+       function(ob) {
+         if(ob.status == "clean")
+           $('#diffs').load(
+             diff_provider, {projid:projid, pageid:page_id},
+             function() {
+               $("#diffs").accordion("destroy").css("display", "none");
+               if($("#diffs h3").length) {
+                 $("#diffs").accordion({autoHeight: false, collapsible: true});
+               }
+               $('#diffs').css("display", "block");});});
+  })();
+
 
   //Initialise proofreader
   init();

@@ -118,14 +118,17 @@ class CommandProcessor:
         while ident != None:
             if self.user in self.data.pages[ident].otext_filenames:
                 ts = self.data.pages[ident].otext_timestamps.get(self.user)
-                if ts:
-                    ts = ts.ctime()
-                else:
-                    ts = ""
-                if self.data.pages[ident].otext_filenames[self.user] == None:
+                ts = ts.ctime() if ts else ""
+                o_filenames = self.data.pages[ident].otext_filenames
+                if o_filenames[self.user] == None:
                     reserved.append((ident, ts))
                 else:
-                    submitted_nodiffs.append((ident, ts))
+                    if len(set([o_filenames[X]
+                                for X in o_filenames
+                                if o_filenames[X]])) < 2:
+                        submitted_nodiffs.append((ident, ts))
+                    else:
+                        submitted_diffs.append((ident, ts))
             ident = self.data.pages[ident].next_ident
         print("Content-type: text/json; charset=UTF-8\n")
         json.dump((reserved, submitted_diffs, submitted_nodiffs), sys.stdout)
@@ -133,8 +136,11 @@ class CommandProcessor:
 
     def reserve(self):
         ident = self.data.first_page
+        policy = self.data.meta.get("policy")
+        policy = int(policy) if policy else 1
         while ident != None:
-            if len(self.data.pages[ident].otext_filenames) == 0:
+            if (len(self.data.pages[ident].otext_filenames) < policy and
+                self.user not in self.data.pages[ident].otext_filenames):
                 self.data.pages[ident].add_otext(None, self.user)
                 self.data.save()
                 break
