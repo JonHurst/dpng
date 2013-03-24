@@ -2,19 +2,15 @@ jQuery(
   function() {
     jQuery.ajaxSetup({'cache': false});
 
-    var ajax_interface = "../cgi-bin/command.py";
+    var ajax_interface = "../cgi-bin/lineedit.py";
     var url_param_strings = location.search.substring(1).split("&");
     var projid = "";
-    var task = "features";
     for(var c = 0; c < url_param_strings.length; c++) {
       var pos = url_param_strings[c].indexOf("=");
       if(pos == -1) continue;
       var name = url_param_strings[c].substring(0, pos);
       if(name == "projid")  {
         projid = decodeURIComponent(url_param_strings[c].substring(pos + 1));
-      }
-      else if(name == "task") {
-        task = decodeURIComponent(url_param_strings[c].substring(pos + 1));
       }
     }
     var pageid;
@@ -23,40 +19,40 @@ jQuery(
 
     //if a pagepicker descendent with an href is clicked, treat it as a pageid: load image
     //and add divs to represent lines
-    function on_pagepicker_click(event) {
-      event.preventDefault();
-      var href = $(event.target).attr('href');
-      if(href) {
-        pageid = href;
-        jQuery.getJSON(ajax_interface,
-                       { verb: "get", task: "lines", projid: projid, pageid: href}, page_callback);
-      }
-    }
+    $('#pagepicker').click(
+      function(event) {
+        event.preventDefault();
+        var href = $(event.target).attr('href');
+        if(href) {
+          pageid = href;
+          jQuery.getJSON(
+            ajax_interface,
+            { verb: "get_lines", projid: projid, pageid: href},
+            function(ob) {
+              lines = ob;
+              var url = ajax_interface + "?" + 
+                jQuery.param({verb: "get_image", projid: projid, pageid: pageid});
+              var img = $("<img />").attr({'src': url, 'alt': "", 'id': "image"});
+              if ( img.get(0).complete || img.get(0).readyState === 4 ) {
+                image_load_handler({currentTarget: img.get(0)});
+              }
+              else {
+                img.load(image_load_handler);
+              }
+            });
+        }
+      });
 
-    function page_callback(ob, status) {
-      if(ob[0] != pageid) return; //out of sync reply
-      image = ob[1];
-      lines = ob[2];
-      load_image(image);
-    }
-
-    $('#pagepicker').click(on_pagepicker_click);
-
-    function load_image(url, pos) {
-      url = url || "../images/blank.png";
-      var img = $("<img />").attr({'src': url, 'alt': pos, 'id': "image"});
-      if ( img.get(0).complete || img.get(0).readyState === 4 ) {
-        image_load_handler({currentTarget: img.get(0)});
-      }
-      else {
-        img.load(image_load_handler);
-      }
-    }
 
     function image_load_handler(event) {
       var target = event.currentTarget;
       var pos = target.getAttribute('alt');
-      $('#image').eq(pos).replaceWith(target);
+      $('#image').replaceWith(target);
+      refresh_lines();
+    }
+
+
+    function refresh_lines() {
       $('.linehere').remove();
       var height = $("#image").height();
       var divs = [];
@@ -70,23 +66,33 @@ jQuery(
         }
     }
 
-    //if a line is clicked, remove it; if the image is clicked where there is no line div,
-    //add one.
 
-    function on_imagecontainer_click(event) {
-      if(event.target.className == "linehere")
-        $(event.target).remove();
-      else {
-        var div = $("<div class=\"linehere\"/>");
-        div.insertAfter("#image");
-        var div_position = $("#image").offset();
-        div_position.top = event.pageY - 3;
-        div.offset(div_position);
+    $('#recalc').click(
+      function() {
+        jQuery.getJSON(
+          ajax_interface,
+          { verb: "calc_lines", projid: projid, pageid: pageid},
+            function(ob) {
+              lines = ob;
+              refresh_lines();
+            });
+      });
+
+
+    //if a line div is clicked, remove it; if the image is clicked
+    //where there is no line div, add one.
+    $('#image_container').click(
+      function on_imagecontainer_click(event) {
+        if(event.target.className == "linehere")
+          $(event.target).remove();
+        else {
+          var div = $("<div class=\"linehere\"/>");
+          div.insertAfter("#image");
+          var div_position = $("#image").offset();
+          div_position.top = event.pageY - 3;
+          div.offset(div_position);
         }
-    }
-
-
-    $('#image_container').click(on_imagecontainer_click);
+      });
 
 
       function on_drop_first(ev) {
@@ -141,35 +147,29 @@ jQuery(
     $('#submit').click(on_submit_click);
 
 
-    function submit_callback(ob, status) {
-      jQuery.getJSON(ajax_interface,
-      {verb:"list", task: "lines", type: "res", projid: projid},
-                     list_callback);
-      jQuery.getJSON(ajax_interface,
-      {verb:"list", task: "lines", type: "done", projid: projid},
-                     list_callback);
-    }
-
-    function list_callback(ob, status) {
-      var list_type = ob[0];
-      var listing = ob[1];
-      var content;
-      if(listing.length == 0)
+    function list(ob, status) {
+      function page_list(id_list) {
+        var content;
+        if(id_list.length == 0)
           content = $("<p>None</p>");
-      else {
-        content = ($("<table/>"));
-        for(var c = 0; c < listing.length; c++) {
-          content.append($("<tr><td><a href='" +
-                           listing[c][0] + "'>" +
-                           listing[c][0] + "</a></td><td>" +
-                           listing[c][1] + "</td></tr>"));
+        else {
+          content = ($("<div class='page_list'/>"));
+          for(var c = 0; c < id_list.length; c++) {
+            content.append($("<a class='page_ref' href='" +
+                             id_list[c] + "'>" +
+                             id_list[c] + "</a>"));
+          }
         }
+        return content;
       }
-      $('#' + list_type).replaceWith($("<div id='" + list_type + "'/>").append(content));
+      jQuery.getJSON(
+        ajax_interface,
+        {verb:"list_lines", projid: projid},
+        function(ob) {
+          $('#todo').empty().append(page_list(ob[0]));
+          $('#done').empty().append(page_list(ob[1]));
+        });
     }
 
-    //kick things off
-    submit_callback();
-
-
+    list();
   });
