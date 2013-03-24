@@ -19,7 +19,7 @@ def escape(text):
 def diff(a, b):
     a = a.splitlines()
     b = b.splitlines()
-    return "\n".join(colorize(list(difflib.unified_diff(a, b))))
+    return "\n".join(colorize(list(difflib.unified_diff(a, b, n=1))))
 
 
 def colorize(lines):
