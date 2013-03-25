@@ -2,22 +2,27 @@
 
 import sys
 import scanner
+import math
 
 
-def process_image(img, sample_fraction):
-    pure_white_threshold = 0.95 #pure white is excluded from centile calculation
-    white_threshold_factor = 0.8
-    black_threshold_factor = 0.5
-    min_line_size = 6
+def thresholds(img, sample_fraction):
     rows = scanner.process_image(img, sample_fraction)
-    #note row[0] will always be pure white
-    #find 10th centile value
-    sortedrows = [ X for X in rows if X < rows[0] * pure_white_threshold]
-    sortedrows.sort()
-    if not sortedrows: return []
-    centile10 = sortedrows[len(sortedrows) // 10]
-    white_threshold = centile10 + (rows[0] - centile10) * (white_threshold_factor)
-    black_threshold = centile10 + (rows[0] - centile10) * (black_threshold_factor)
+    s = sum(rows)
+    ssq = sum([X*X for X in rows])
+    avg = s / len(rows)
+    var = (ssq / len(rows)) - avg * avg
+    sdev = math.sqrt(var)
+    white_threshold = avg + 0.6 * sdev
+    black_threshold = avg - 0.4 * sdev
+    return (int(black_threshold * 100 / rows[0]),
+            int(white_threshold * 100 / rows[0]))
+
+
+def process_image(img, sample_fraction=32, black_threshold=55, white_threshold=85):
+    rows = scanner.process_image(img, sample_fraction)
+    min_line_size = len(rows) / 300
+    white_threshold = int(white_threshold) * rows[0] / 100
+    black_threshold = int(black_threshold) * rows[0] / 100
     #white eats gray
     #first top to bottom
     white = True
@@ -51,9 +56,6 @@ def process_image(img, sample_fraction):
                 lines.append([c, 0])
                 white = False;
             lines[-1][1] += 1
-    # for l in lines:
-    #     if l[1] < min_line_size: continue
-    #     line = l[0] + l[1] / 2
     return [ (X[0] + X[1]/2) * 10000/len(rows) for X in lines if X[1] >= min_line_size ]
 
 

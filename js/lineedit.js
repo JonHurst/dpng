@@ -17,6 +17,38 @@ jQuery(
     var image;
     var lines;
 
+
+    (function() /*controls*/ {
+       function samples_change(event, ui) {
+         $("#sample_text").val(
+           "Samples per line: " + ui.value);
+       }
+       $("#sample_fraction").slider(
+         {min:10, max:50,
+          change: samples_change,
+          slide: samples_change});
+       $("#sample_fraction").slider("value", 16);
+       function thresholds_change( event, ui ) {
+         $("#threshold_range").val(
+           "Thresholds: " + ui.values[0] + " - " + ui.values[1]);
+       }
+       $("#thresholds").slider(
+         {range: true, min: 0, max: 100, values: [0, 0],
+          change: thresholds_change,
+          slide: thresholds_change});
+       $("#thresholds").slider("values", [60, 80]);
+       $("#calibrate").click(
+         function() {
+           jQuery.getJSON(
+             ajax_interface,
+             {verb:"calibrate", projid:projid, pageid:pageid,
+              samples: $("#sample_fraction").slider("value")},
+             function(ob) {
+               $("#thresholds").slider("values", ob);
+             });
+         });
+     })();
+
     //if a pagepicker descendent with an href is clicked, treat it as a pageid: load image
     //and add divs to represent lines
     $('#pagepicker').click(
@@ -74,7 +106,10 @@ jQuery(
       function() {
         jQuery.getJSON(
           ajax_interface,
-          { verb: "calc_lines", projid: projid, pageid: pageid},
+          { verb: "calc_lines", projid: projid, pageid: pageid,
+            black_threshold: $("#thresholds").slider("values", 0),
+            white_threshold: $("#thresholds").slider("values", 1),
+            samples: $("#sample_fraction").slider("value")},
             function(ob) {
               lines = ob;
               refresh_lines();
