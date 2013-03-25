@@ -4,6 +4,10 @@
     padding: 0;
 }
 
+body {
+    overflow:hidden;
+}
+
 #pagepicker
 {
     position:absolute;
@@ -57,5 +61,6 @@
 
 a.page_ref{
     display: inline-block;
+    text-align:center;
     width:25%;
 }
