@@ -53,6 +53,7 @@ jQuery(
 
 
     function refresh_lines() {
+      if(lines == undefined) return;
       $('.linehere').remove();
       var height = $("#image").height();
       var divs = [];
@@ -64,7 +65,9 @@ jQuery(
         divs[c].offset(div_position);
         divs[c].attr("id", "line_" + lines[c]);
         }
+      $('.linehere').width($('#image').width());
     }
+    $(window).resize(refresh_lines);
 
 
     $('#recalc').click(
