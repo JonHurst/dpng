@@ -122,6 +122,7 @@ function proofreader() {
         return function(ob) {
           if(page_id == _page_id) {
             current_line = 0;
+            offset = 0;
             line_positions = ob;
             max_line = line_positions && line_positions.length;
             select();
